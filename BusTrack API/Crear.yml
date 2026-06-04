@@ -1,0 +1,23 @@
+info:
+  name: Crear
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:3000/drivers/DriverCreate
+  body:
+    type: json
+    data: |-
+      {
+        "id":3,
+        "nombre": "Juan Soto",
+        "license":"805mmm"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: UpdateDriver
+  type: http
+  seq: 6
+
+http:
+  method: PUT
+  url: http://localhost:3000/drivers/1
+  body:
+    type: json
+    data: |-
+      {
+        "nombre":"CrisMj",
+        "license":"af123"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

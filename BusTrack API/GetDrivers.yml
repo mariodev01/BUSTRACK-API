@@ -1,0 +1,15 @@
+info:
+  name: GetDrivers
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:3000/drivers
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
