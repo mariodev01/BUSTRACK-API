@@ -11,6 +11,12 @@ router.get("/", (req, res) => {
 
 //Crear conductor
 router.post("/DriverCreate",(req,res)=>{
+
+  if(req.body.nombre === "" || req.body.nombre === " " || req.body.nombre.Lenght <= 0){
+    res.status(401).json("Nombre no puede estar vacio");
+    return;
+  }
+
   const newDriver = {
     id:req.body.id,
     nombre: req.body.nombre,
@@ -28,6 +34,7 @@ router.get("/:id",(req,res)=>{
 
   if (!driver){
     res.status(404).json("No entiendo porque, ya tu no me quieres ver");
+    return;
   }
 
   res.status(201).json(driver);
@@ -39,6 +46,7 @@ router.put("/:id",(req,res)=>{
 
   if (!driver){
     res.status(404).json("Baby llevo tiempo esperando una respuestaaaa tuyaaaa");
+    return;
   }
 
   driver.nombre = req.body.nombre,
@@ -55,6 +63,8 @@ router.delete("/:id",(req,res)=>{
     return res.status(404).json({
       message: "Conductor no encontrado"
     });
+
+    return;
   }
 
   drivers.splice(driver,1);
