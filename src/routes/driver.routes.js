@@ -11,7 +11,7 @@ router.get("/", driverControl.getDrivers);
 router.post("/DriverCreate",driverControl.createDriver);
 
 //Obtener uno
-router.get("/:nombre",driverControl.getDriverByName);
+router.get("/:id",driverControl.getDriverById);
 
 //Update Driver
 router.put("/:id",driverControl.updateDriver);
