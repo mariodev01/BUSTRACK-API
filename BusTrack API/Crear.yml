@@ -5,13 +5,13 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/drivers/DriverCreate
+  url: http://localhost:3000/drivers/drivers
   body:
     type: json
     data: |-
       {
-        "nombre": "Jesucristo",
-        "license":"805mmm"
+        "nombre":"Martha",
+        "license": "abc001"
       }
   auth: inherit
 

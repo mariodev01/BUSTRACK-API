@@ -8,7 +8,7 @@ const driverControl = require("../controllers/driverController.js");
 router.get("/", driverControl.getDrivers);
 
 //Crear conductor
-router.post("/DriverCreate",driverControl.createDriver);
+router.post("/drivers",driverControl.createDriver);
 
 //Obtener uno
 router.get("/:id",driverControl.getDriverById);
