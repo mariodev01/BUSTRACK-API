@@ -1,4 +1,3 @@
-const drivers = require("../Data/Drivers");
 const ServiceDriver = require("../services/DriverServices");
 
 const getDrivers = (req,res) =>{
