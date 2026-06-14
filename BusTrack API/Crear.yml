@@ -8,11 +8,7 @@ http:
   url: http://localhost:3000/drivers/drivers
   body:
     type: json
-    data: |-
-      {
-        "nombre":"Martha",
-        "license": "abc001"
-      }
+    data: ""
   auth: inherit
 
 settings:
