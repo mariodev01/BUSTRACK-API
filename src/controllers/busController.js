@@ -15,7 +15,6 @@ const getBuses = (req,res) =>{
 const getBusById = (req,res) =>{
     try {
         const bus = BusService.BusById(Number(req.params.id));
-
         res.status(200).json(bus);
     } catch (error) {
         res.status(404).json
@@ -28,7 +27,6 @@ const getBusById = (req,res) =>{
 const createBus = (req,res)=>{
     try {
         const newBus = BusService.Create(req.body);
-
         res.status(201).json(newBus);
     } catch (error) {
         res.status(400).json({
