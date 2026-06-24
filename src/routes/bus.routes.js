@@ -14,7 +14,11 @@ router.get("/:id",busController.getBusById);
 //Update Bus
 router.put("/:id",busController.updateBus);
 
+router.patch("/:id",busController.updatePartialBus);
+
 //Delete Bus
 router.delete("/:id",busController.deleteBus);
+
+router.get("/drivers/:id/buses",busController.busXDriver);
 
 module.exports = router;

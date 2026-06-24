@@ -47,6 +47,18 @@ const updateBus = (req,res)=>{
     }
 };
 
+const updatePartialBus = (req,res)=>{
+    try{
+        const update = BusService.PartialUpdate(Number(req.params.id),req.body);
+
+        res.status(200).json(update);
+    } catch(error){
+        res.status(400).json({
+            message:error.message
+        });
+    }
+};
+
 const deleteBus = (req,res)=>{
     try {
         const bus = BusService.Delete(Number(req.params.id));
@@ -59,11 +71,29 @@ const deleteBus = (req,res)=>{
     }    
 };
 
+const busXDriver = (req,res) =>{
+    try{
+        const buses = BusService.busByDriverId(Number(req.params.id));
+
+        res.json(buses);
+    }
+    catch (error) {
+        res.status(404).json
+        ({
+            message: error.message
+        });
+    }
+};
+
+
+
 
 module.exports = {
     getBuses,
     getBusById,
     createBus,
     updateBus,
-    deleteBus
+    deleteBus,
+    busXDriver,
+    updatePartialBus
 };

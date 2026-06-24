@@ -1,6 +1,5 @@
 const Buses = require("../Data/Buses");
 const drivers = require("../Data/Drivers");
-const Drivers = require("../Data/Drivers");
 
 const AllBuses = () =>{
     return {
@@ -15,18 +14,10 @@ const BusById = (id) =>{
         throw new Error("No existe Bus con ese Id");        
     };
 
-    return{
-        Data: Bus
-    };
+    return Bus;
 };
 
 const Create = (BusBody)=>{
-    const idBus = Buses.at(-1);
-
-    const existePlaca = Buses.find(b=>b.plate === BusBody.plate);
-
-    const existeConductor = drivers.find(d=>d.id === BusBody.driverId);
-
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
@@ -35,31 +26,30 @@ const Create = (BusBody)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if (existePlaca){
-        throw new Error("Ya existe un bus con esa Placa");
+    if(!ExisteConductor(Number(BusBody.driverId))){
+        throw new Error("No existe conductor con ese Id");
     };
 
-    if(existeConductor){
-        const newBus = {
-            id: Buses.length >= 1? idBus.id + 1 : 1,
-            plate: BusBody.plate,
-            capacity: Number(BusBody.capacity),
-            driver_id: BusBody.driverId
-        };
+    if(ExistePlaca(BusBody.plate)){
+        throw new Error("Ya existe un bus con esa placa");
+    };
 
-        Buses.push(newBus);
-        return newBus;
-    }else{
-        throw new Error("Error,No existe conductor con ese ID");
-    }
+    const idBus = Buses.at(-1);
+
+    const newBus = 
+    {
+        id: Buses.length >= 1? idBus.id + 1 : 1,
+        plate: BusBody.plate,
+        capacity: Number(BusBody.capacity),
+        driver_id: BusBody.driverId
+    };
+
+    Buses.push(newBus);
+    return newBus;
 };
 
 const Update = (id,BusBody) => {
     const Bus = BusById(id);
-     
-    const existePlaca = Buses.find(b=>b.plate === BusBody.plate);
-
-    const existeConductor = drivers.find(d=>d.id === BusBody.driverId);
 
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -69,21 +59,39 @@ const Update = (id,BusBody) => {
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if (existePlaca){
-        throw new Error("Ya existe un bus con esa Placa");
+    if(!ExisteConductor(Number(BusBody.driverId))){
+        throw new Error("No existe conductor con ese Id");
     };
 
-    if(existeConductor){
-        Bus.Data.plate = BusBody.plate;
-        Bus.Data.capacity = Number(BusBody.capacity);
-        Bus.Data.driver_id = BusBody.driverId;
+    if(ExistePlaca(BusBody.plate)){
+        throw new Error("Ya existe un bus con esa placa");
+    };
 
-        return Bus;
-    }else{
-        throw new Error("Error,No existe conductor con ese ID");
-    }
+    Bus.plate = BusBody.plate;
+    Bus.capacity = Number(BusBody.capacity);
+    Bus.driver_id = BusBody.driverId;
+
+    return Bus;
 };
 
+const PartialUpdate = (id,BusBody)=>{
+    const Bus = BusById(id);
+
+    if (!BusBody || Object.keys(BusBody).length === 0) {
+        throw new Error("Request body cannot be empty.");
+    };
+    
+    if (!esNumero(BusBody.capacity) || Number(BusBody.capacity) <= 0){
+        throw new Error("Capacidad del bus ingresada no es correcta");
+    };
+
+    if (BusBody.capacity !== undefined) Bus.capacity = Number(BusBody.capacity)
+    if (BusBody.driverId !== undefined) Bus.driver_id = BusBody.driverId
+
+    // Bus.capacity = Number(BusBody.capacity)
+    // Bus.driver_id = BusBody.driverId
+    return Bus;
+}
 
 const Delete = (id)=>{
     const index = Buses.findIndex(b => b.id === id);
@@ -96,14 +104,33 @@ const Delete = (id)=>{
 };
 
 function esNumero(valor) {
-    return typeof valor === 'number' && !isNaN(valor);
-}
+    return !isNaN(valor);
+};
 
+const busByDriverId = (id)=>{
+    const BusByDrivers = Buses.filter(b=>b.driver_id === id);
+
+    return BusByDrivers;
+};
+
+const ExisteConductor = (driverID) =>{
+    const driver = drivers.find(d=>d.id === driverID);
+
+    return driver;
+};
+
+const ExistePlaca = (placa) => {
+    const existe = Buses.find(b=>b.plate === placa);
+
+    return existe;
+};
 
 module.exports = {
     AllBuses,
     BusById,
     Create,
     Update,
-    Delete
-}
+    Delete,
+    busByDriverId,
+    PartialUpdate
+};
