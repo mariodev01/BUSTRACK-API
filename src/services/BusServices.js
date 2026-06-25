@@ -62,36 +62,20 @@ const Update = (id,BusBody) => {
     if(!ExisteConductor(Number(BusBody.driverId))){
         throw new Error("No existe conductor con ese Id");
     };
-
-    if(ExistePlaca(BusBody.plate)){
+    
+    if(BusBody.plate === Bus.plate){
+        Bus.plate = BusBody.plate;
+    }else if(ExistePlaca(BusBody.plate)){
         throw new Error("Ya existe un bus con esa placa");
     };
-
     Bus.plate = BusBody.plate;
+        
     Bus.capacity = Number(BusBody.capacity);
+        
     Bus.driver_id = BusBody.driverId;
 
     return Bus;
 };
-
-const PartialUpdate = (id,BusBody)=>{
-    const Bus = BusById(id);
-
-    if (!BusBody || Object.keys(BusBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
-    };
-    
-    if (!esNumero(BusBody.capacity) || Number(BusBody.capacity) <= 0){
-        throw new Error("Capacidad del bus ingresada no es correcta");
-    };
-
-    if (BusBody.capacity !== undefined) Bus.capacity = Number(BusBody.capacity)
-    if (BusBody.driverId !== undefined) Bus.driver_id = BusBody.driverId
-
-    // Bus.capacity = Number(BusBody.capacity)
-    // Bus.driver_id = BusBody.driverId
-    return Bus;
-}
 
 const Delete = (id)=>{
     const index = Buses.findIndex(b => b.id === id);
@@ -132,5 +116,4 @@ module.exports = {
     Update,
     Delete,
     busByDriverId,
-    PartialUpdate
 };
