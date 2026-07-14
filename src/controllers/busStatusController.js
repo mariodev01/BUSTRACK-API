@@ -52,7 +52,8 @@ const deleteStatus = (req,res)=>{
     try{
         const d = statusServices.deleteStatus(Number(req.params.id));
 
-        res.json(d);
+        res.status(200).json(d);
+
     }catch(error) {
         res.status(404).json
         ({
