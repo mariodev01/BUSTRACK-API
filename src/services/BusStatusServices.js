@@ -16,11 +16,13 @@ const GetStatusById = (id) =>{
 };
 
 const CreateStatus = (body)=>{
+    const bus = existeBus(body.bus_id);
+
     if (!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(existeBus(body.bus_id).length <= 0){
+    if(!bus){
         throw new Error("No existe bus con ese id");
     };
 
@@ -32,38 +34,44 @@ const CreateStatus = (body)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(Number(body.current_passengers) > existeBus(body.bus_id).capacity){
+    if(Number(body.current_passengers) > bus.capacity){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    if(tieneEstado(Number(body.bus_id))){
+    const busStatus = tieneEstado(body.bus_id);
+
+    if(busStatus){
         throw new Error("Ya existe un estado registrado para este autobús");
-    };
+    }else if(busStatus === undefined){
+        const idS = BusStatusData.at(-1);
 
-    const idS = BusStatusData.at(-1);
+        const newS = {
+            id: BusStatusData.length >= 1? idS.id + 1 : 1,
+            bus_id: Number(body.bus_id),
+            status: body.status,
+            current_passengers: Number(body.current_passengers),
+            next_stop: body.next_stop
+        };
+        BusStatusData.push(newS);
 
-    const newS = {
-        id: BusStatusData.length >= 1? idS.id + 1 : 1,
-        bus_id: Number(body.bus_id),
-        status: body.status,
-        current_passengers: Number(body.current_passengers),
-        next_stop: body.next_stop
-    };
-
-    BusStatusData.push(newS);
-
-    return newS;
+        return newS;
+    };    
 };
 
 const updateStatus = (id,body)=>{
 
     const status = GetStatusById(id);
 
+    const busStatus = tieneEstado(body.bus_id);
+        
+    const bus = existeBus(body.bus_id);
+
+
     if(!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(existeBus(body.bus_id).length <= 0){
+    if(!bus){
         throw new Error("No existe bus con ese id");
     };
 
@@ -75,35 +83,27 @@ const updateStatus = (id,body)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(Number(body.current_passengers) > existeBus(body.bus_id).capacity){
+    if(Number(body.current_passengers) > bus.capacity){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    const currentStatus = BusStatusData.find(s=>s.bus_id === body.bus_id);
-
-    // if(currentStatus.status === body.status){
-    //     status.status = body.status;
-    // }
-
-
-    if(body.status === status.status){
-        status.bus_id = body.bus_id;
-
+    if(busStatus.status === body.status){
         status.status = body.status;
-
-        if(body.status === "INACTIVE" || body.status === "MAINTENANCE"){
-            status.current_passengers = 0;
-        }else{
-            status.current_passengers = Number(body.current_passengers);
-        };
-
-        status.next_stop = body.next_stop;    
-    }else if(tieneEstado(body.bus_id)){
+    }else if(body.status !== busStatus.status){
         throw new Error("Ya existe un estado registrado para este autobús");
+    }
+    status.status = body.status;
+
+    status.bus_id = body.bus_id;
+    
+    if(body.status === "INACTIVE" || body.status === "MAINTENANCE"){
+        status.current_passengers = 0;
+    }else{
+        status.current_passengers = Number(body.current_passengers);
     };
 
+    status.next_stop = body.next_stop;
     return status;
-
 };
 
 const deleteStatus = (id)=>{
@@ -128,17 +128,18 @@ function esNumero(valor) {
 function tieneEstado(BusID){
     const busEstado = BusStatusData.find(s=>s.bus_id === BusID);
 
-    if(busEstado){
-        if(busEstado.status !== ""){
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }else{
-        return false;
-    }    
+    return busEstado;
+    // if(busEstado){
+    //     if(busEstado.status !== ""){
+    //         return true;
+    //     }
+    //     else
+    //     {
+    //         return false;
+    //     }
+    // }else{
+    //     return false;
+    // }    
 };
 
 function existeBus(busId){
