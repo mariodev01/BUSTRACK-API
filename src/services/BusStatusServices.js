@@ -42,7 +42,7 @@ const CreateStatus = (body)=>{
 
     if(busStatus){
         throw new Error("Ya existe un estado registrado para este autobús");
-    }else if(busStatus === undefined){
+    }else{
         const idS = BusStatusData.at(-1);
 
         const newS = {
@@ -59,13 +59,11 @@ const CreateStatus = (body)=>{
 };
 
 const updateStatus = (id,body)=>{
-
     const status = GetStatusById(id);
 
     const busStatus = tieneEstado(body.bus_id);
         
     const bus = existeBus(body.bus_id);
-
 
     if(!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -87,23 +85,26 @@ const updateStatus = (id,body)=>{
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    if(busStatus.status === body.status){
+    if(!busStatus){
+        throw new Error("No hay estado registrado para este bus, favor crear uno");
+    }
+
+    if(busStatus.id === id){
         status.status = body.status;
-    }else if(body.status !== busStatus.status){
+
+        status.bus_id = body.bus_id;
+    
+        if(body.status === "INACTIVE" || body.status === "MAINTENANCE"){
+            status.current_passengers = 0;
+        }else{
+            status.current_passengers = Number(body.current_passengers);
+        };
+
+        status.next_stop = body.next_stop;
+        return status;
+    }else if(busStatus){
         throw new Error("Ya existe un estado registrado para este autobús");
     }
-    status.status = body.status;
-
-    status.bus_id = body.bus_id;
-    
-    if(body.status === "INACTIVE" || body.status === "MAINTENANCE"){
-        status.current_passengers = 0;
-    }else{
-        status.current_passengers = Number(body.current_passengers);
-    };
-
-    status.next_stop = body.next_stop;
-    return status;
 };
 
 const deleteStatus = (id)=>{
@@ -129,17 +130,6 @@ function tieneEstado(BusID){
     const busEstado = BusStatusData.find(s=>s.bus_id === BusID);
 
     return busEstado;
-    // if(busEstado){
-    //     if(busEstado.status !== ""){
-    //         return true;
-    //     }
-    //     else
-    //     {
-    //         return false;
-    //     }
-    // }else{
-    //     return false;
-    // }    
 };
 
 function existeBus(busId){
