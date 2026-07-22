@@ -1,11 +1,18 @@
-const Trips = require("../Data/Trip");
+const trips = require("../Data/Trip.js");
+const bus = require("../Data/Buses.js");
+
+const isoDate = new Date().toISOString(); 
+// Output: "2026-07-19T23:59:59.000Z"
+
 
 const allTrips = ()=>{
-    return Trips;
+    return {
+        data: trips
+    };
 };
 
 const tripById = (id)=>{
-    const trip = Trips.find(t=>t.id === id);
+    const trip = trips.find(t=>t.id === id);
 
     if(!trip){
         throw new Error("No existe viaje con ese Id");
@@ -19,11 +26,22 @@ const create = (tripBody)=>{
         throw new Error("Request body cannot be empty.");
     };
 
-    const idTrip = Trips.at(-1);
+    if(!ExisteBus(tripBody.bus_id)){
+        throw new Error("No existe bus con ese Id");
+    };
+
+    const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
+
+    if(statusTrip.status === "IN_PROGRESS"){
+        throw new Error("Este autobús ya tiene un viaje en curso.");
+    };
+
+
+    const idTrip = trips.at(-1);
 
     const newTrip = 
     {
-        id: Trips.length >= 1? idTrip.id + 1 : 1,
+        id: trips.length >= 1? idTrip.id + 1 : 1,
         bus_id: tripBody.bus_id,
         origin: tripBody.origin,
         destination: tripBody.destination,
@@ -31,6 +49,48 @@ const create = (tripBody)=>{
         arrival_time: null,
         status: null
     };
+};
 
+const Update = (id,tripBody)=>{
+    const trip = tripById(id);
 
-}
+    if(!tripBody || Object.keys(tripBody).length === 0) {
+        throw new Error("Request body cannot be empty.");
+    };
+
+    if(!trip){
+        throw new Error("No hay un viaje registrado con ese Id");
+    };
+
+    trip.bus_id = tripBody.bus_id;
+    trip.origin = tripBody.origin;
+    trip.destination = tripBody.destination;
+    trip.arrival_time = isoDate;
+    trip.status = body.status;
+
+    return trip;
+};
+
+const Delete = (id)=>{
+    const i = trips.findIndex(t=>t.id === id);
+
+    if(i > -1){
+        trips.splice(i,1);
+    }else{
+        throw new Error("No existe viaje registrado con ese Id");
+    };
+};
+
+module.exports = {
+    allTrips,
+    tripById,
+    create,
+    Update,
+    Delete
+};
+
+function ExisteBus(id){
+    const exist = bus.find(b=>b.id === id );
+
+    return exist;
+};
