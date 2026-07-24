@@ -1,5 +1,6 @@
 const trips = require("../Data/Trip.js");
 const bus = require("../Data/Buses.js");
+const statusBus = require("../Data/BusStatus.js");
 
 const isoDate = new Date().toISOString(); 
 // Output: "2026-07-19T23:59:59.000Z"
@@ -22,20 +23,29 @@ const tripById = (id)=>{
 };
 
 const create = (tripBody)=>{
+    const bus = ExisteBus(tripBody.bus_id);
+    const infoBus = BusEstado(tripBody.bus_id);
+    const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
+
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(!ExisteBus(tripBody.bus_id)){
+    if(!bus){
         throw new Error("No existe bus con ese Id");
     };
-
-    const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
 
     if(statusTrip.status === "IN_PROGRESS"){
         throw new Error("Este autobús ya tiene un viaje en curso.");
     };
 
+    if(infoBus.status !== "ACTIVE"){
+        throw new Error("El autobús no está disponible para iniciar un viaje.");
+    }
+
+    if(tripBody.origin.toLowerCase() === tripBody.destination.toLowerCase()){
+        throw new Error("El origen y el destino deben ser diferentes.");
+    }
 
     const idTrip = trips.at(-1);
 
@@ -93,4 +103,10 @@ function ExisteBus(id){
     const exist = bus.find(b=>b.id === id );
 
     return exist;
+};
+
+function BusEstado(id){
+    const info = statusBus.find(s=>s.bus_id === id);
+
+    return info;
 };
