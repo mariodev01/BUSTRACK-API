@@ -4,15 +4,15 @@ const router = express.Router();
 
 const tripController = require("../controllers/tripController");
 
-router.get("/");
+router.get("/",tripController.get);
 
-router.post("/trips");
+router.post("/trips",tripController.create);
 
-router.get("/:id");
+router.get("/:id",tripController.getById);
 
-router.put("/:id");
+router.put("/:id",tripController.update);
 
-router.delete("/:id");
+router.delete("/:id",tripController.deleteT);
 
 
 module.exports = router;
