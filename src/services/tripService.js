@@ -4,6 +4,7 @@ const statusBus = require("../Data/BusStatus.js");
 
 const isoDate = new Date().toISOString(); 
 // Output: "2026-07-19T23:59:59.000Z"
+const validStatus = ["IN_PROGRESS","FINISHED","CANCELLED"];
 
 
 const allTrips = ()=>{
@@ -25,7 +26,7 @@ const tripById = (id)=>{
 const create = (tripBody)=>{
     const bus = ExisteBus(tripBody.bus_id);
     const infoBus = BusEstado(tripBody.bus_id);
-    const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
+    // const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -35,17 +36,21 @@ const create = (tripBody)=>{
         throw new Error("No existe bus con ese Id");
     };
 
-    if(statusTrip.status === "IN_PROGRESS"){
-        throw new Error("Este autobús ya tiene un viaje en curso.");
-    };
+    // if(statusTrip.status === "IN_PROGRESS"){
+    //     throw new Error("Este autobús ya tiene un viaje en curso.");
+    // };
 
-    if(infoBus.status !== "ACTIVE"){
-        throw new Error("El autobús no está disponible para iniciar un viaje.");
-    }
+    if(infoBus.status !== "ACTIVE" || !infoBus){
+        throw new Error("El autobús no está disponible para iniciar un viaje o el bus no tiene estado.");
+    };
 
     if(tripBody.origin.toLowerCase() === tripBody.destination.toLowerCase()){
         throw new Error("El origen y el destino deben ser diferentes.");
-    }
+    };
+
+    if(!validStatus.includes(tripBody.status)){
+        throw new Error("Estatus no permitido");
+    };
 
     const idTrip = trips.at(-1);
 
@@ -55,14 +60,18 @@ const create = (tripBody)=>{
         bus_id: tripBody.bus_id,
         origin: tripBody.origin,
         destination: tripBody.destination,
-        departure_time: "2026-07-16T08:00:00",
+        departure_time: isoDate,
         arrival_time: null,
-        status: null
+        status: tripBody.status
     };
+
+    trips.push(newTrip);
+    return newTrip;
 };
 
 const Update = (id,tripBody)=>{
     const trip = tripById(id);
+    const bus = ExisteBus(tripBody.bus_id);
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -72,11 +81,20 @@ const Update = (id,tripBody)=>{
         throw new Error("No hay un viaje registrado con ese Id");
     };
 
+    if(!bus){
+        throw new Error("No existe bus con ese Id");
+    };
+
+    if(!validStatus.includes(tripBody.status)){
+        throw new Error("Estatus no permitido");
+    };
+
+
     trip.bus_id = tripBody.bus_id;
     trip.origin = tripBody.origin;
     trip.destination = tripBody.destination;
     trip.arrival_time = isoDate;
-    trip.status = body.status;
+    trip.status = tripBody.status;
 
     return trip;
 };
