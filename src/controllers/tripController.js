@@ -24,6 +24,16 @@ const getById = (req,res)=>{
 };
 const create = (req,res)=>{
     try{
+        const {origin, destination, bus_id, status } = req.body;
+
+        if (!origin || !destination || !bus_id || !status) 
+        {
+            return res.status(400).json({
+                error: 'Faltan campos obligatorios',
+                campos: ['origin', 'destination', 'bus_id', 'status'].filter(campo => !req.body[campo])
+            });
+        };
+
         const newTrip = tripService.create(req.body);
 
         res.status(201).json(newTrip);
@@ -35,7 +45,18 @@ const create = (req,res)=>{
 };
 const update = (req,res)=>{
     try {
-        const u = tripService.Update(Number(req.params.id),req.body);
+
+        const {origin, destination, bus_id, status } = req.body;
+
+        if (!origin || !destination || !bus_id || !status) 
+        {
+            return res.status(400).json({
+                error: 'Faltan campos obligatorios',
+                campos: ['origin', 'destination', 'bus_id', 'status'].filter(campo => !req.body[campo])
+            });
+        };
+
+        const u = tripService.update(Number(req.params.id),req.body);
 
         res.status(200).json(u);
     } catch (error) {
@@ -46,7 +67,7 @@ const update = (req,res)=>{
 };
 const deleteT = (req,res)=>{
     try{
-        const d = tripService.Delete(Number(req.params.id));
+        const d = tripService.deleteTrip(Number(req.params.id));
 
         res.status(200).json(d);
     }catch (error) {

@@ -1,13 +1,11 @@
 const trips = require("../Data/Trip.js");
-const bus = require("../Data/Buses.js");
+const Buses = require("../Data/Buses.js");
 const statusBus = require("../Data/BusStatus.js");
 
 const validStatus = ["IN_PROGRESS","FINISHED","CANCELLED"];
 
 const allTrips = ()=>{
-    return {
-        data: trips
-    };
+    return trips;
 };
 
 const tripById = (id)=>{
@@ -21,21 +19,25 @@ const tripById = (id)=>{
 };
 
 const create = (tripBody)=>{
-    const bus = ExisteBus(tripBody.bus_id);
-    const infoBus = BusEstado(tripBody.bus_id);
-    const fecha = Fecha();
+    const existe = existeBus(tripBody.bus_id);
+    const infoBus = busEstado(tripBody.bus_id);
+    const fecha = fechaActual();
     const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(!bus){
+    if(!existe){
         throw new Error("No existe bus con ese Id");
     };
 
-    if(infoBus.status !== "ACTIVE" || !infoBus){
-        throw new Error("El autobús no está disponible para iniciar un viaje o el bus no tiene estado.");
+    if(!infoBus){
+        throw new Error("El bus no tiene estatus actualmente");
+    }
+
+    if(infoBus.status !== "ACTIVE"){
+        throw new Error("El autobús no está disponible para iniciar un viaje");
     };
 
     if(tripBody.origin.toLowerCase() === tripBody.destination.toLowerCase()){
@@ -44,6 +46,10 @@ const create = (tripBody)=>{
 
     if(!validStatus.includes(tripBody.status)){
         throw new Error("Estatus no permitido");
+    };
+
+    if(!statusTrip){
+        throw new Error("Este bus no ha tenido un viaje");
     };
 
     if(statusTrip.status === "IN_PROGRESS"){
@@ -67,21 +73,29 @@ const create = (tripBody)=>{
     };
 };
 
-const Update = (id,tripBody)=>{
+const update = (id,tripBody)=>{
     const trip = tripById(id);
-    const bus = ExisteBus(tripBody.bus_id);
-    const fecha = Fecha();
-
+    const existe = existeBus(tripBody.bus_id);
+    const infoBus = busEstado(tripBody.bus_id);
+    const fecha = fechaActual();
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
+    // if(!infoBus){
+    //     throw new Error("El bus no tiene estatus actualmente");
+    // };
+
+    // if(infoBus.status !== "ACTIVE"){
+    //     throw new Error("El autobús no está disponible para iniciar un viaje");
+    // };
+
     if(!trip){
         throw new Error("No hay un viaje registrado con ese Id");
     };
 
-    if(!bus){
+    if(!existe){
         throw new Error("No existe bus con ese Id");
     };
 
@@ -89,16 +103,21 @@ const Update = (id,tripBody)=>{
         throw new Error("Estatus no permitido");
     };
 
-    trip.bus_id = tripBody.bus_id;
+    if(tripBody.status === "FINISHED"){
+        trip.arrival_time = fecha;
+        trip.status = tripBody.status;
+        return trip;
+    };
+
+    //trip.bus_id = tripBody.bus_id;
     trip.origin = tripBody.origin;
-    trip.destination = tripBody.destination;
-    trip.arrival_time = fecha;
+    trip.destination = tripBody.destination;    
     trip.status = tripBody.status;
 
     return trip;
 };
 
-const Delete = (id)=>{
+const deleteTrip = (id)=>{
     const i = trips.findIndex(t=>t.id === id);
 
     if(i > -1){
@@ -112,23 +131,23 @@ module.exports = {
     allTrips,
     tripById,
     create,
-    Update,
-    Delete
+    update,
+    deleteTrip
 };
 
-function ExisteBus(id){
-    const exist = bus.find(b=>b.id === id );
+function existeBus(id){
+    const exist = Buses.find(b=>b.id === id );
 
     return exist;
 };
 
-function BusEstado(id){
+function busEstado(id){
     const info = statusBus.find(s=>s.bus_id === id);
 
     return info;
 };
 
-function Fecha(){
+function fechaActual(){
     const hoy = new Date();
 
     //Formato local según el navegador/país
