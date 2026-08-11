@@ -1,6 +1,6 @@
 const tripService = require("../services/tripService");
 
-const get = (req,res)=>{
+const getAllTrips = (req,res)=>{
     try{
         const all = tripService.allTrips();
 
@@ -11,18 +11,18 @@ const get = (req,res)=>{
         });
     }
 };
-const getById = (req,res)=>{
+const getTripById = (req,res)=>{
     try {
-        const one = tripService.tripById(Number(req.params.id));
+        const trip = tripService.tripById(Number(req.params.id));
 
-        res.status(200).json(one);
+        res.status(200).json(trip);
     } catch(error) {
         res.status(404).json({
             message: error.message
         });
     }
 };
-const create = (req,res)=>{
+const createTrip = (req,res)=>{
     try{
         const {origin, destination, bus_id, status } = req.body;
 
@@ -43,7 +43,7 @@ const create = (req,res)=>{
         });
     }
 };
-const update = (req,res)=>{
+const updateTrip = (req,res)=>{
     try {
 
         const {origin, destination, bus_id, status } = req.body;
@@ -56,20 +56,20 @@ const update = (req,res)=>{
             });
         };
 
-        const u = tripService.update(Number(req.params.id),req.body);
+        const updatedTrip = tripService.update(Number(req.params.id),req.body);
 
-        res.status(200).json(u);
+        res.status(200).json(updatedTrip);
     } catch (error) {
         res.status(400).json({
             message:error.message
         });
     }
 };
-const deleteT = (req,res)=>{
+const deleteTrip = (req,res)=>{
     try{
-        const d = tripService.deleteTrip(Number(req.params.id));
+        const deletedTrip = tripService.deleteTrip(Number(req.params.id));
 
-        res.status(200).json(d);
+        res.status(200).json(deletedTrip);
     }catch (error) {
         res.status(404).json
         ({
@@ -80,9 +80,9 @@ const deleteT = (req,res)=>{
 
 
 module.exports = {
-    get,
-    getById,
-    create,
-    update,
-    deleteT
+    getAllTrips,
+    getTripById,
+    createTrip,
+    updateTrip,
+    deleteTrip
 };

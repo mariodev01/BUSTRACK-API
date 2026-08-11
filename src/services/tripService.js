@@ -22,7 +22,6 @@ const create = (tripBody)=>{
     const existe = existeBus(tripBody.bus_id);
     const infoBus = busEstado(tripBody.bus_id);
     const fecha = fechaActual();
-    const statusTrip = trips.find(t=>t.bus_id === tripBody.bus_id);
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -48,48 +47,31 @@ const create = (tripBody)=>{
         throw new Error("Estatus no permitido");
     };
 
-    if(!statusTrip){
-        throw new Error("Este bus no ha tenido un viaje");
+    const idTrip = trips.at(-1);
+
+    const newTrip = 
+    {
+        id: trips.length >= 1? idTrip.id + 1 : 1,
+        bus_id: tripBody.bus_id,
+        origin: tripBody.origin,
+        destination: tripBody.destination,
+        departure_time: fecha,
+        arrival_time: null,
+        status: tripBody.status
     };
 
-    if(statusTrip.status === "IN_PROGRESS"){
-        throw new Error("Este autobús ya tiene un viaje en curso.");
-    }else{
-        const idTrip = trips.at(-1);
-
-        const newTrip = 
-        {
-            id: trips.length >= 1? idTrip.id + 1 : 1,
-            bus_id: tripBody.bus_id,
-            origin: tripBody.origin,
-            destination: tripBody.destination,
-            departure_time: fecha,
-            arrival_time: null,
-            status: tripBody.status
-        };
-
-        trips.push(newTrip);
-        return newTrip;
-    };
+    trips.push(newTrip);
+    return newTrip;
 };
 
 const update = (id,tripBody)=>{
     const trip = tripById(id);
     const existe = existeBus(tripBody.bus_id);
-    const infoBus = busEstado(tripBody.bus_id);
     const fecha = fechaActual();
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
-
-    // if(!infoBus){
-    //     throw new Error("El bus no tiene estatus actualmente");
-    // };
-
-    // if(infoBus.status !== "ACTIVE"){
-    //     throw new Error("El autobús no está disponible para iniciar un viaje");
-    // };
 
     if(!trip){
         throw new Error("No hay un viaje registrado con ese Id");
@@ -99,21 +81,27 @@ const update = (id,tripBody)=>{
         throw new Error("No existe bus con ese Id");
     };
 
+    if(tripBody.origin.toLowerCase() === tripBody.destination.toLowerCase()){
+        throw new Error("El origen y el destino deben ser diferentes.");
+    };
+
+
     if(!validStatus.includes(tripBody.status)){
         throw new Error("Estatus no permitido");
+    };
+
+    if(trip.status === "FINISHED"){
+        throw new Error("Ya el viaje tiene status terminado");
     };
 
     if(tripBody.status === "FINISHED"){
         trip.arrival_time = fecha;
         trip.status = tripBody.status;
-        return trip;
+    }else{
+        trip.origin = tripBody.origin;
+        trip.destination = tripBody.destination;    
+        trip.status = tripBody.status;
     };
-
-    //trip.bus_id = tripBody.bus_id;
-    trip.origin = tripBody.origin;
-    trip.destination = tripBody.destination;    
-    trip.status = tripBody.status;
-
     return trip;
 };
 
