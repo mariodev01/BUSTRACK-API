@@ -23,6 +23,11 @@ const create = (tripBody)=>{
     const infoBus = busEstado(tripBody.bus_id);
     const fecha = fechaActual();
 
+    const existeTrip = trips.some(t =>
+    t.bus_id === tripBody.bus_id &&
+    t.status === "IN_PROGRESS"
+    );
+
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
@@ -45,6 +50,10 @@ const create = (tripBody)=>{
 
     if(!validStatus.includes(tripBody.status)){
         throw new Error("Estatus no permitido");
+    };
+
+    if(existeTrip){
+        throw new Error("Ya el bus tiene un viaje en progreso");
     };
 
     const idTrip = trips.at(-1);
