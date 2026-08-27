@@ -1,8 +1,8 @@
 const ServiceDriver = require("../services/DriverServices");
 
-const getDrivers = (req,res) =>{
+const getDrivers = async (req,res) =>{
     try {
-        const drivers2 = ServiceDriver.getAllDrivers();
+        const drivers2 = await ServiceDriver.getAllDrivers();
 
         res.json(drivers2);
     } catch (error) {
@@ -12,9 +12,9 @@ const getDrivers = (req,res) =>{
     }
 };
 
-const getDriverById = (req,res) =>{
+const getDriverById = async (req,res) =>{
     try {
-        const driver2 = ServiceDriver.getDriverById(Number(req.params.id));
+        const driver2 = await ServiceDriver.getDriverById(Number(req.params.id));
 
         res.status(200).json(driver2);
     } catch (error) {
@@ -25,9 +25,9 @@ const getDriverById = (req,res) =>{
     }
 };
 
-const createDriver = (req,res)=>{
+const createDriver = async (req,res)=>{
     try {
-        const newDriver = ServiceDriver.createDriver(req.body);
+        const newDriver = await ServiceDriver.createDriver(req.body);
 
         res.status(201).json(newDriver);
     } catch (error) {
@@ -37,9 +37,9 @@ const createDriver = (req,res)=>{
     }
 };
 
-const updateDriver = (req,res)=>{
+const updateDriver = async (req,res)=>{
     try {
-        const update = ServiceDriver.Update(Number(req.params.id),req.body);
+        const update = await ServiceDriver.Update(Number(req.params.id),req.body);
 
         res.status(200).json(update);
     } catch (error) {
@@ -49,9 +49,9 @@ const updateDriver = (req,res)=>{
     }
 };
 
-const deleteDriver = (req,res)=>{
+const deleteDriver = async (req,res)=>{
     try {
-        const driver = ServiceDriver.Delete(Number(req.params.id));
+        const driver = await ServiceDriver.Delete(Number(req.params.id));
 
         res.status(200).json(driver);
     } catch (error) {
@@ -60,7 +60,6 @@ const deleteDriver = (req,res)=>{
         });
     }    
 };
-
 
 module.exports = {
     getDrivers,

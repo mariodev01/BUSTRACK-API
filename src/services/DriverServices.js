@@ -1,20 +1,28 @@
 const drivers = require("../Data/Drivers");
+const db = require("../config/db");
 
-const getAllDrivers = ()=>{
-    return drivers;
+const getAllDrivers = async ()=>{
+    const sql = "select * from drivers";
+
+    const resultado = await db.query(sql);
+
+    return resultado.rows;
 };
 
-const getDriverById  =(id) =>{
-    const driver = drivers.find(d=>d.id === id);
+const getDriverById  = async (id) =>{
+    const sql = "select * from drivers WHERE id = $1";
+    
+    const valores = [id];
 
-    if (!driver) {
+    const resultado = await db.query(sql, valores);
+    if (resultado.rowCount <=0) {
         throw new Error("No existe conductor/a con ese Id");
     }
 
-    return driver;
+    return resultado.rows[0];
 };
 
-const createDriver = (driverBody) =>{
+const createDriver = async (driverBody) =>{
     const exists = drivers.find(d => d.NumeroLicencia === driverBody.license);
 
     if (!driverBody || Object.keys(driverBody).length === 0) {
@@ -32,21 +40,18 @@ const createDriver = (driverBody) =>{
     if(driverBody.license === "" || driverBody.license === " " || driverBody.license.length <= 0){
         throw new Error("Licencia no puede estar vacio");
     };
-    const ID = drivers.at(-1);
 
-    const newDriver = {
-        id:drivers.length >= 1? ID.id + 1 : 1,
-        nombre: driverBody.nombre,
-        NumeroLicencia: driverBody.license
-    };
+    const sql = "INSERT INTO drivers (nombre, numero_licencia) VALUES ($1, $2) RETURNING *";
+    const valores = [driverBody.nombre, driverBody.license];
 
-    drivers.push(newDriver);
-
-    return newDriver;
+    // RETURNING * devuelve el registro recién creado con su ID generado
+    const resultado = await db.query(sql, valores);
+    
+    return resultado.rows[0];
 };
 
-const Update = (id,driverBody) =>{
-    const driver = getDriverById(id);
+const Update = async (id,driverBody) =>{
+    const driver = await getDriverById(id);
 
     if (!driverBody || Object.keys(driverBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -66,20 +71,22 @@ const Update = (id,driverBody) =>{
         throw new Error("Ya existe un conductor con esa licencia");
     };
 
-    driver.nombre = driverBody.nombre;
-    driver.NumeroLicencia = driverBody.license;
+    const sql = 'UPDATE drivers SET nombre = $1, numero_licencia = $2 WHERE id = $3 RETURNING *';
+    const valores = [driverBody.nombre,driverBody.license, id];
 
-    return driver;
+    const resultado = await db.query(sql, valores);
+    return resultado.rows[0]; // Devuelve el registro modificado
 };
 
-const Delete = (id) =>{
-    const index = drivers.findIndex(user => user.id === id);
+const Delete = async (id) =>{
+    const sql = 'DELETE FROM drivers WHERE id = $1';
+    const valores = [id];
+
+    const resultado = await db.query(sql, valores);
     
-    if (index > -1) {
-    drivers.splice(index, 1);
-    }else{
-        throw new Error(`No existe conductor/a con ese Id ${index}`);
-    };
+    //rowCount indica cuántas filas fueron eliminadas
+    
+    return resultado.rowCount > 0;
 };
 
 module.exports = {
