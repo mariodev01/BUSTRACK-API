@@ -23,14 +23,10 @@ const getDriverById  = async (id) =>{
 };
 
 const createDriver = async (driverBody) =>{
-    const exists = drivers.find(d => d.NumeroLicencia === driverBody.license);
+    const exists = await existeLicencia(driverBody.license);
 
     if (!driverBody || Object.keys(driverBody).length === 0) {
         throw new Error("Request body cannot be empty.");
-    };
-
-    if (exists) {
-        throw new Error("La licencia ya existe");
     };
 
     if(driverBody.nombre === "" || driverBody.nombre === " " || driverBody.nombre.length <= 0){
@@ -41,18 +37,19 @@ const createDriver = async (driverBody) =>{
         throw new Error("Licencia no puede estar vacio");
     };
 
+    if (exists){
+        throw new Error("La licencia ya existe");
+    };
+
     const sql = "INSERT INTO drivers (nombre, numero_licencia) VALUES ($1, $2) RETURNING *";
     const valores = [driverBody.nombre, driverBody.license];
 
-    // RETURNING * devuelve el registro recién creado con su ID generado
     const resultado = await db.query(sql, valores);
     
     return resultado.rows[0];
 };
 
 const Update = async (id,driverBody) =>{
-    const driver = await getDriverById(id);
-
     if (!driverBody || Object.keys(driverBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
@@ -65,11 +62,14 @@ const Update = async (id,driverBody) =>{
         throw new Error("Licencia no puede estar vacio");
     };
 
-    const existeLicencia = drivers.find(d=>d.NumeroLicencia === driverBody.license);
+    const exists = "SELECT * FROM drivers WHERE numero_licencia = $1 and id != $2";
+    const valor = [driverBody.license,id];
 
-    if (existeLicencia){
+    const res = await db.query(exists,valor);
+
+    if(res.rowCount >= 1){
         throw new Error("Ya existe un conductor con esa licencia");
-    };
+    }
 
     const sql = 'UPDATE drivers SET nombre = $1, numero_licencia = $2 WHERE id = $3 RETURNING *';
     const valores = [driverBody.nombre,driverBody.license, id];
@@ -87,6 +87,19 @@ const Delete = async (id) =>{
     //rowCount indica cuántas filas fueron eliminadas
     
     return resultado.rowCount > 0;
+};
+
+const existeLicencia = async (licencia) =>{
+    const exists = "SELECT * FROM drivers WHERE numero_licencia = $1";
+    const valor = [licencia];
+
+    const res = await db.query(exists,valor);
+
+    if(res.rowCount >= 1){
+        return true;
+    }else{
+        return false;
+    }
 };
 
 module.exports = {
