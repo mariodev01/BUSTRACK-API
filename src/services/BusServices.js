@@ -1,23 +1,33 @@
 const Buses = require("../Data/Buses");
 const drivers = require("../Data/Drivers");
+const db = require("../config/db");
 
-const AllBuses = () =>{
-    return {
-        data: Buses
-    };
+
+const AllBuses = async () =>{
+    const sql = "SELECT * FROM buses;"
+
+    const res = await db.query(sql);
+
+    return res.rows;
 };
 
-const BusById = (id) =>{
-    const Bus = Buses.find(b=> b.id === id);
+const BusById = async (id) =>{
+    const sql = "SELECT * FROM buses where id = $1";
+    const valor = [id];
 
-    if(!Bus){
+    const res = await db.query(sql,valor);
+    
+    if(res.rowCount <=0){
         throw new Error("No existe Bus con ese Id");        
     };
 
-    return Bus;
+    return res.rows[0];
 };
 
-const Create = (BusBody)=>{
+const Create = async (BusBody)=>{
+    const conductor = ExisteConductor(Number(BusBody.driverId)); 
+    const placa = ExistePlaca(BusBody.plate); 
+
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
@@ -26,31 +36,26 @@ const Create = (BusBody)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(!ExisteConductor(Number(BusBody.driverId))){
+    if(conductor <=0){
         throw new Error("No existe conductor con ese Id");
     };
 
-    if(ExistePlaca(BusBody.plate)){
+    if(placa >= 1){
         throw new Error("Ya existe un bus con esa placa");
     };
 
-    const idBus = Buses.at(-1);
 
-    const newBus = 
-    {
-        id: Buses.length >= 1? idBus.id + 1 : 1,
-        plate: BusBody.plate,
-        capacity: Number(BusBody.capacity),
-        driver_id: BusBody.driverId
-    };
+    const sql = "INSERT INTO buses(placa,capacity,driver_id) VALUES($1,$2,$3) RETURNING*";
+    const valores = [BusBody.plate,BusBody.capacity,BusBody.driverId];
 
-    Buses.push(newBus);
-    return newBus;
+    const res = await db.query(sql,valores);
+
+    return res.rows[0];
 };
 
-const Update = (id,BusBody) => {
-    const Bus = BusById(id);
-
+const Update = async (id,BusBody) => {
+    const conductor = ExisteConductor(Number(BusBody.driverId)); 
+    
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
@@ -59,54 +64,65 @@ const Update = (id,BusBody) => {
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(!ExisteConductor(Number(BusBody.driverId))){
+    if(conductor <=0){
         throw new Error("No existe conductor con ese Id");
     };
-    
-    if(BusBody.plate === Bus.plate){
-        Bus.plate = BusBody.plate;
-    }else if(ExistePlaca(BusBody.plate)){
-        throw new Error("Ya existe un bus con esa placa");
-    };
-    Bus.plate = BusBody.plate;
-        
-    Bus.capacity = Number(BusBody.capacity);
-        
-    Bus.driver_id = BusBody.driverId;
 
-    return Bus;
+    const queryPlate = "SELECT * FROM buses where placa = $1 and id != $2";
+    const parameters = [BusBody.plate,id];
+
+    const ress = await db.query(queryPlate,parameters);
+
+    if(ress.rowCount >=1){
+        throw new Error("Ya existe un bus con esa placa!");
+    }
+
+    const sql = "UPDATE buses set placa = $1, capacity = $2, driver_id = $3 where id = $4";
+    const valores = [BusBody.plate,BusBody.capacity,BusBody.driverId,id];
+
+    const res = await db.query(sql,valores);
+
+    return res.rows[0];
 };
 
-const Delete = (id)=>{
-    const index = Buses.findIndex(b => b.id === id);
-    
-    if (index > -1) {
-    Buses.splice(index, 1);
-    }else{
-        throw new Error(`No existe bus con ese Id ${index}`);
-    };
+const Delete = async (id)=>{
+    const sql = "DELETE  FROM buses where id = $1";
+    const valores = [id];
+
+    const res = await db.query(sql,valores);
+
+    return res.rowCount > 0;
 };
 
 function esNumero(valor) {
     return !isNaN(valor);
 };
 
-const busByDriverId = (id)=>{
-    const BusByDrivers = Buses.filter(b=>b.driver_id === id);
+const busByDriverId = async (id)=>{
+    const sql = "SELECT * FROM buses where driver_id = $1";
+    const valores = [id];
 
-    return BusByDrivers;
+    const res = await db.query(sql,valores);
+
+    return res.rows;
 };
 
-const ExisteConductor = (driverID) =>{
-    const driver = drivers.find(d=>d.id === driverID);
+const ExisteConductor = async (driverID) =>{
+    const sql = "select * from drivers WHERE id = $1";  
+    const valores = [driverID];
 
-    return driver;
+    const res = await db.query(sql,valores);
+
+    return res.rowCount;
 };
 
-const ExistePlaca = (placa) => {
-    const existe = Buses.find(b=>b.plate === placa);
+const ExistePlaca = async (placa) => {
+    const sql = "SELECT * FROM buses where placa = $1";
+    const valores = [placa];
 
-    return existe;
+    const res = await db.query(sql,valores);
+
+    return res.rowCount;
 };
 
 module.exports = {

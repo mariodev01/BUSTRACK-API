@@ -1,4 +1,3 @@
-const drivers = require("../Data/Drivers");
 const db = require("../config/db");
 
 const getAllDrivers = async ()=>{
@@ -37,7 +36,7 @@ const createDriver = async (driverBody) =>{
         throw new Error("Licencia no puede estar vacio");
     };
 
-    if (exists){
+    if(exists){
         throw new Error("La licencia ya existe");
     };
 
