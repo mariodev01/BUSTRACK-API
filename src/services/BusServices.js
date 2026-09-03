@@ -25,8 +25,8 @@ const BusById = async (id) =>{
 };
 
 const Create = async (BusBody)=>{
-    const conductor = ExisteConductor(Number(BusBody.driverId)); 
-    const placa = ExistePlaca(BusBody.plate); 
+    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
+    const placa = await ExistePlaca(BusBody.plate); 
 
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -54,7 +54,7 @@ const Create = async (BusBody)=>{
 };
 
 const Update = async (id,BusBody) => {
-    const conductor = ExisteConductor(Number(BusBody.driverId)); 
+    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
     
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
