@@ -1,5 +1,3 @@
-const Buses = require("../Data/Buses");
-const drivers = require("../Data/Drivers");
 const db = require("../config/db");
 
 

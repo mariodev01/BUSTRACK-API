@@ -1,34 +1,40 @@
-const BusStatusData = require("../Data/BusStatus");
-const BusData = require("../Data/Buses");
-const ValidStatus = ["ACTIVE","INACTIVE","MAINTENANCE"];
+const db = require("../config/db");
+// const BusStatusData = require("../Data/BusStatus");
+// const BusData = require("../Data/Buses");
+// const ValidStatus = ["ACTIVE","INACTIVE","MAINTENANCE"];
 
-const GetStatus = () =>{
-    return BusStatusData;
+const GetStatus = async () =>{
+    const sql = "SELECT * FROM bus_estado";
+    const res = await db.query(sql);    
+    return res.rows;
 };
 
-const GetStatusById = (id) =>{
-    const status = BusStatusData.find(s=>s.id === id);
+const GetStatusById = async(id) =>{
+    const sql = "SELECT * FROM bus_estado WHERE id = $1";
+    const valor = [id];
 
-    if(!status){
+    const res = await db.query(sql,valor);
+
+    if(res.rowCount <= 0){
         throw new Error("No existe estado con ese Id");
     }
-    return status;
+    return res.rows[0];
 };
 
-const CreateStatus = (body)=>{
-    const bus = existeBus(body.bus_id);
+const CreateStatus = async (body)=>{
+    const bus = await existeBus(body.bus_id);
 
     if (!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(!bus){
+    if(bus <=0){
         throw new Error("No existe bus con ese id");
     };
 
-    if(!ValidStatus.includes(body.status)){
-        throw new Error("Estatus no permitido");
-    };
+    // if(!ValidStatus.includes(body.status)){
+    //     throw new Error("Estatus no permitido");
+    // };
 
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
@@ -38,44 +44,31 @@ const CreateStatus = (body)=>{
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    const busStatus = tieneEstado(body.bus_id);
+    const sql = "INSERT INTO bus_estado(bus_id,estado,current_passengers,next_stop) VALUES($1,$2,$3,$4) RETURNING *";
+    const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop];
+    const res = await db.query(sql,valores);
 
-    if(busStatus){
-        throw new Error("Ya existe un estado registrado para este autobús");
-    }else{
-        const idS = BusStatusData.at(-1);
-
-        const newS = {
-            id: BusStatusData.length >= 1? idS.id + 1 : 1,
-            bus_id: Number(body.bus_id),
-            status: body.status,
-            current_passengers: Number(body.current_passengers),
-            next_stop: body.next_stop
-        };
-        BusStatusData.push(newS);
-
-        return newS;
-    };    
+    return res.rows[0];    
 };
 
-const updateStatus = (id,body)=>{
-    const status = GetStatusById(id);
+const updateStatus = async (id,body)=>{
+    const status = await GetStatusById(id);
 
     const busStatus = tieneEstado(body.bus_id);
         
-    const bus = existeBus(body.bus_id);
+    const bus = await existeBus(body.bus_id);
 
     if(!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(!bus){
+    if(bus <= 0){
         throw new Error("No existe bus con ese id");
     };
 
-    if(!ValidStatus.includes(body.status)){
-        throw new Error("Estatus no permitido");
-    };
+    // if(!ValidStatus.includes(body.status)){
+    //     throw new Error("Estatus no permitido");
+    // };
 
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
@@ -89,32 +82,19 @@ const updateStatus = (id,body)=>{
         throw new Error("No hay estado registrado para este bus, favor crear uno");
     }
 
-    if(busStatus.id === id){
-        status.status = body.status;
+    const sql = "UPDATE bus_estado SET bus_id = $1, estado = $2, current_passengers = $3, next_stop = $4 where id = $5";
+    const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop,id];
+    const res = await db.query(sql,valores);
 
-        status.bus_id = body.bus_id;
-    
-        if(body.status === "INACTIVE" || body.status === "MAINTENANCE"){
-            status.current_passengers = 0;
-        }else{
-            status.current_passengers = Number(body.current_passengers);
-        };
-
-        status.next_stop = body.next_stop;
-        return status;
-    }else if(busStatus){
-        throw new Error("Ya existe un estado registrado para este autobús");
-    }
+    return res.rows[0];
 };
 
-const deleteStatus = (id)=>{
-    const index = BusStatusData.findIndex(b => b.id === id);
-    
-    if (index > -1) {
-    BusStatusData.splice(index, 1);
-    }else{
-        throw new Error(`No existe status registrado con ese Id ${index}`);
-    };
+const deleteStatus = async (id)=>{
+    const sql = "DELETE FROM bus_estado WHERE id = $1";
+    const valor = [id];
+    const res = await db.query(sql,valor);
+
+    return res.rows;
 };
 
 //Definir bien a ver que es lo que quieren
@@ -132,10 +112,12 @@ function tieneEstado(BusID){
     return busEstado;
 };
 
-function existeBus(busId){
-    const BusExist = BusData.find(b=>b.id === busId);
+async function existeBus(busId){
+    const sql = "SELECT * FROM buses WHERE id = $1";
+    const valor = [busId];
+    const res = await db.query(sql,valor);
 
-    return BusExist;
+    return res.rowCount;
 };
 
 module.exports = {
