@@ -1,8 +1,8 @@
 const statusServices = require("../services/BusStatusServices");
 
-const getStatus = (req,res) =>{
+const getStatus = async (req,res) =>{
     try{
-        const allStatus = statusServices.GetStatus();
+        const allStatus = await statusServices.GetStatus();
 
         res.json(allStatus);
     }catch(error) {
@@ -12,9 +12,9 @@ const getStatus = (req,res) =>{
     }
 };
 
-const getById = (req,res)=>{
+const getById = async(req,res)=>{
     try{
-        const one = statusServices.GetStatusById(Number(req.params.id));
+        const one = await statusServices.GetStatusById(Number(req.params.id));
 
         res.status(200).json(one);
     }catch(error) {
@@ -24,9 +24,9 @@ const getById = (req,res)=>{
     }
 };
 
-const createStatus = (req,res) =>{
+const createStatus = async (req,res) =>{
     try{
-        const newStatus = statusServices.CreateStatus(req.body);
+        const newStatus = await statusServices.CreateStatus(req.body);
 
         res.status(201).json(newStatus);
     }catch(error) {
@@ -36,9 +36,9 @@ const createStatus = (req,res) =>{
     }
 };
 
-const updateStatus = (req,res) =>{
+const updateStatus = async (req,res) =>{
     try{
-        const u = statusServices.updateStatus(Number(req.params.id),req.body);
+        const u = await statusServices.updateStatus(Number(req.params.id),req.body);
 
         res.status(200).json(u);
     }catch(error) {
@@ -48,9 +48,9 @@ const updateStatus = (req,res) =>{
     }
 };
 
-const deleteStatus = (req,res)=>{
+const deleteStatus = async (req,res)=>{
     try{
-        const d = statusServices.deleteStatus(Number(req.params.id));
+        const d = await statusServices.deleteStatus(Number(req.params.id));
 
         res.status(200).json(d);
 

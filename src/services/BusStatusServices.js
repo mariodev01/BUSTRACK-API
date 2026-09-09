@@ -23,6 +23,7 @@ const GetStatusById = async(id) =>{
 
 const CreateStatus = async (body)=>{
     const bus = await existeBus(body.bus_id);
+    const existeEstado = await tieneEstado(body.bus_id);
 
     if (!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -32,9 +33,9 @@ const CreateStatus = async (body)=>{
         throw new Error("No existe bus con ese id");
     };
 
-    // if(!ValidStatus.includes(body.status)){
-    //     throw new Error("Estatus no permitido");
-    // };
+    if(existeEstado >=1 ){
+        throw new Error("Ya ese bus tiene un estado asignado");
+    };
 
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
@@ -52,9 +53,7 @@ const CreateStatus = async (body)=>{
 };
 
 const updateStatus = async (id,body)=>{
-    const status = await GetStatusById(id);
-
-    const busStatus = tieneEstado(body.bus_id);
+    //const busStatus = tieneEstado(body.bus_id);
         
     const bus = await existeBus(body.bus_id);
 
@@ -66,10 +65,6 @@ const updateStatus = async (id,body)=>{
         throw new Error("No existe bus con ese id");
     };
 
-    // if(!ValidStatus.includes(body.status)){
-    //     throw new Error("Estatus no permitido");
-    // };
-
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
@@ -78,9 +73,9 @@ const updateStatus = async (id,body)=>{
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    if(!busStatus){
-        throw new Error("No hay estado registrado para este bus, favor crear uno");
-    }
+    // if(!busStatus){
+    //     throw new Error("No hay estado registrado para este bus, favor crear uno");
+    // }
 
     const sql = "UPDATE bus_estado SET bus_id = $1, estado = $2, current_passengers = $3, next_stop = $4 where id = $5";
     const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop,id];
@@ -106,10 +101,13 @@ function esNumero(valor) {
     return !isNaN(valor);
 };
 
-function tieneEstado(BusID){
-    const busEstado = BusStatusData.find(s=>s.bus_id === BusID);
+async function tieneEstado(BusID){
+    const sql = "SELECT * FROM bus_estado WHERE bus_id = $1";
+    const valor = [BusID];
 
-    return busEstado;
+    const res = await db.query(sql,valor);
+
+    return res.rowCount;
 };
 
 async function existeBus(busId){
