@@ -1,24 +1,23 @@
-const trips = require("../Data/Trip.js");
-const Buses = require("../Data/Buses.js");
-const statusBus = require("../Data/BusStatus.js");
+const db = require("../config/db");
 
 const validStatus = ["IN_PROGRESS","FINISHED","CANCELLED"];
 
-const allTrips = ()=>{
-    return trips;
+const allTrips = async()=>{
+    const sql = "SELECT * FROM Trips";
+    const res = await db.query(sql);
+
+    return res.rows;
 };
 
-const tripById = (id)=>{
-    const trip = trips.find(t=>t.id === id);
+const tripById = async (id)=>{
+    const sql = "SELECT * FROM Trips WHERE id = $1";
+    const valor = [id];
+    const res = await db.query(sql,valor);
 
-    if(!trip){
-        throw new Error("No existe viaje con ese Id");
-    };
-
-    return trip;
+    return res.rows[0];
 };
 
-const create = (tripBody)=>{
+const create = async (tripBody)=>{
     const existe = existeBus(tripBody.bus_id);
     const infoBus = busEstado(tripBody.bus_id);
     const fecha = fechaActual();
@@ -132,16 +131,22 @@ module.exports = {
     deleteTrip
 };
 
-function existeBus(id){
-    const exist = Buses.find(b=>b.id === id );
+async function existeBus(id){
+    const sql = "SELECT * FROM buses WHERE id = $1";
+    const valor = [id];
 
-    return exist;
+    const res = await db.query(sql,valor);
+
+    return res.rowCount;
 };
 
-function busEstado(id){
-    const info = statusBus.find(s=>s.bus_id === id);
+async function busEstado(id){
+    const sql = "SELECT * FROM bus_estado WHERE id = $1";
+    const valor = [id];
 
-    return info;
+    const res = await db.query(sql,valor);
+
+    return res.rowCount;
 };
 
 function fechaActual(){
