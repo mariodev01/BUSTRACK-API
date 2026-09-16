@@ -1,8 +1,8 @@
 const tripService = require("../services/tripService");
 
-const getAllTrips = (req,res)=>{
+const getAllTrips = async (req,res)=>{
     try{
-        const all = tripService.allTrips();
+        const all = await tripService.allTrips();
 
         res.json(all);
     }catch(error){
@@ -11,9 +11,9 @@ const getAllTrips = (req,res)=>{
         });
     }
 };
-const getTripById = (req,res)=>{
+const getTripById = async (req,res)=>{
     try {
-        const trip = tripService.tripById(Number(req.params.id));
+        const trip = await tripService.tripById(Number(req.params.id));
 
         res.status(200).json(trip);
     } catch(error) {
@@ -22,7 +22,7 @@ const getTripById = (req,res)=>{
         });
     }
 };
-const createTrip = (req,res)=>{
+const createTrip = async (req,res)=>{
     try{
         const {origin, destination, bus_id, status } = req.body;
 
@@ -34,7 +34,7 @@ const createTrip = (req,res)=>{
             });
         };
 
-        const newTrip = tripService.create(req.body);
+        const newTrip = await tripService.create(req.body);
 
         res.status(201).json(newTrip);
     }catch(error) {
@@ -43,7 +43,7 @@ const createTrip = (req,res)=>{
         });
     }
 };
-const updateTrip = (req,res)=>{
+const updateTrip = async(req,res)=>{
     try {
 
         const {origin, destination, bus_id, status } = req.body;
@@ -56,7 +56,7 @@ const updateTrip = (req,res)=>{
             });
         };
 
-        const updatedTrip = tripService.update(Number(req.params.id),req.body);
+        const updatedTrip = await tripService.update(Number(req.params.id),req.body);
 
         res.status(200).json(updatedTrip);
     } catch (error) {
@@ -65,9 +65,9 @@ const updateTrip = (req,res)=>{
         });
     }
 };
-const deleteTrip = (req,res)=>{
+const deleteTrip = async (req,res)=>{
     try{
-        const deletedTrip = tripService.deleteTrip(Number(req.params.id));
+        const deletedTrip = await tripService.deleteTrip(Number(req.params.id));
 
         res.status(200).json(deletedTrip);
     }catch (error) {

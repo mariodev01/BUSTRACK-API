@@ -18,28 +18,34 @@ const tripById = async (id)=>{
 };
 
 const create = async (tripBody)=>{
-    const existe = existeBus(tripBody.bus_id);
-    const infoBus = busEstado(tripBody.bus_id);
-    const fecha = fechaActual();
+    const existe = await existeBus(tripBody.bus_id);
+    const infoBus = await busEstado(tripBody.bus_id);
+    //const fecha = fechaActual();
 
-    const existeTrip = trips.some(t =>
-    t.bus_id === tripBody.bus_id &&
-    t.status === "IN_PROGRESS"
-    );
+    const info = "SELECT * FROM bus_estado WHERE id = $1"
+
+    const result = await db.query(info,tripBody.bus_id);
+
+    const registro = result.rows[0];
+
+    // const existeTrip = trips.some(t =>
+    // t.bus_id === tripBody.bus_id &&
+    // t.status === "IN_PROGRESS"
+    // );
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
 
-    if(!existe){
+    if(existe <= 0){
         throw new Error("No existe bus con ese Id");
     };
 
-    if(!infoBus){
+    if(infoBus <= 0){
         throw new Error("El bus no tiene estatus actualmente");
     }
 
-    if(infoBus.status !== "ACTIVE"){
+    if(registro.status !== "ACTIVE"){
         throw new Error("El autobús no está disponible para iniciar un viaje");
     };
 
@@ -47,34 +53,26 @@ const create = async (tripBody)=>{
         throw new Error("El origen y el destino deben ser diferentes.");
     };
 
-    if(!validStatus.includes(tripBody.status)){
-        throw new Error("Estatus no permitido");
-    };
+    // if(!validStatus.includes(tripBody.status)){
+    //     throw new Error("Estatus no permitido");
+    // };
 
-    if(existeTrip){
-        throw new Error("Ya el bus tiene un viaje en progreso");
-    };
+    // if(existeTrip){
+    //     throw new Error("Ya el bus tiene un viaje en progreso");
+    // };
 
-    const idTrip = trips.at(-1);
+    const sql = "INSERT INTO Trips(bus_id,origin,destination,departure_time,arrival_time,status) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
 
-    const newTrip = 
-    {
-        id: trips.length >= 1? idTrip.id + 1 : 1,
-        bus_id: tripBody.bus_id,
-        origin: tripBody.origin,
-        destination: tripBody.destination,
-        departure_time: fecha,
-        arrival_time: null,
-        status: tripBody.status
-    };
+    const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,"NOW()",null,tripBody.status];
 
-    trips.push(newTrip);
-    return newTrip;
+    const res = await db.query(sql,valores);
+    
+    return res.rows[0];
 };
 
-const update = (id,tripBody)=>{
-    const trip = tripById(id);
-    const existe = existeBus(tripBody.bus_id);
+const update = async (id,tripBody)=>{
+    const trip = await tripById(id);
+    const existe = await existeBus(tripBody.bus_id);
     const fecha = fechaActual();
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
@@ -85,7 +83,7 @@ const update = (id,tripBody)=>{
         throw new Error("No hay un viaje registrado con ese Id");
     };
 
-    if(!existe){
+    if(existe <= 0){
         throw new Error("No existe bus con ese Id");
     };
 
@@ -93,34 +91,30 @@ const update = (id,tripBody)=>{
         throw new Error("El origen y el destino deben ser diferentes.");
     };
 
-
-    if(!validStatus.includes(tripBody.status)){
-        throw new Error("Estatus no permitido");
-    };
+    // if(!validStatus.includes(tripBody.status)){
+    //     throw new Error("Estatus no permitido");
+    // };
 
     if(trip.status === "FINISHED"){
         throw new Error("Ya el viaje tiene status terminado");
     };
 
-    if(tripBody.status === "FINISHED"){
-        trip.arrival_time = fecha;
-        trip.status = tripBody.status;
-    }else{
-        trip.origin = tripBody.origin;
-        trip.destination = tripBody.destination;    
-        trip.status = tripBody.status;
-    };
-    return trip;
+    const sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,departure_time = $4,arrival_time = $5,status = $6 WHERE id = $7";
+
+    const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,"NOW()",null,tripBody.status,id];
+    
+    const res = await db.query(sql,valores);
+
+    return res.rows[0];
 };
 
-const deleteTrip = (id)=>{
-    const i = trips.findIndex(t=>t.id === id);
+const deleteTrip = async (id)=>{
+    const sql = "DELETE FROM Trips where id = $1";
+    const valor = [id];
 
-    if(i > -1){
-        trips.splice(i,1);
-    }else{
-        throw new Error("No existe viaje registrado con ese Id");
-    };
+    const res = await db.query(sql,valor);
+
+    return res.rowCount > 0;
 };
 
 module.exports = {
