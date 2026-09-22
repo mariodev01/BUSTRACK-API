@@ -75,7 +75,7 @@ const Update = async (id,BusBody) => {
         throw new Error("Ya existe un bus con esa placa!");
     }
 
-    const sql = "UPDATE buses set placa = $1, capacity = $2, driver_id = $3 where id = $4";
+    const sql = "UPDATE buses set placa = $1, capacity = $2, driver_id = $3 where id = $4 RETURNING *";
     const valores = [BusBody.plate,BusBody.capacity,BusBody.driverId,id];
 
     const res = await db.query(sql,valores);

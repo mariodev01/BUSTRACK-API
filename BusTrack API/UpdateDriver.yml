@@ -5,12 +5,12 @@ info:
 
 http:
   method: PUT
-  url: http://localhost:3000/drivers/3
+  url: http://localhost:3000/drivers/2
   body:
     type: json
     data: |-
       {
-        "nombre":"Salvatore",
+        "nombre":"Mario Salvatore",
         "license":"A-00123456"
       }
   auth: inherit

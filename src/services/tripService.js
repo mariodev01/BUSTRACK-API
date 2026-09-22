@@ -23,8 +23,9 @@ const create = async (tripBody)=>{
     //const fecha = fechaActual();
 
     const info = "SELECT * FROM bus_estado WHERE id = $1"
+    const valor = [tripBody.bus_id];
 
-    const result = await db.query(info,tripBody.bus_id);
+    const result = await db.query(info,valor);
 
     const registro = result.rows[0];
 
@@ -61,11 +62,23 @@ const create = async (tripBody)=>{
     //     throw new Error("Ya el bus tiene un viaje en progreso");
     // };
 
-    const sql = "INSERT INTO Trips(bus_id,origin,destination,departure_time,arrival_time,status) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
+    // La función NOW() va directamente en la sintaxis SQL
+    const sql = `
+    INSERT INTO trips (bus_id, origin, destination, departure_time, arrival_time, status) 
+    VALUES ($1, $2, $3, NOW(), $4, $5) 
+    RETURNING *
+    `;
 
-    const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,"NOW()",null,tripBody.status];
+    // Ajustamos los índices de los parámetros (ahora son 5 en lugar de 6)
+    const valores = [
+    tripBody.bus_id,
+    tripBody.origin,
+    tripBody.destination,
+    null,
+    tripBody.status
+    ];
 
-    const res = await db.query(sql,valores);
+    const res = await db.query(sql, valores);
     
     return res.rows[0];
 };
@@ -99,10 +112,10 @@ const update = async (id,tripBody)=>{
         throw new Error("Ya el viaje tiene status terminado");
     };
 
-    const sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,departure_time = $4,arrival_time = $5,status = $6 WHERE id = $7";
+    const sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $6 WHERE id = $7 RETURNING *";
 
-    const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,"NOW()",null,tripBody.status,id];
-    
+    const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
+
     const res = await db.query(sql,valores);
 
     return res.rows[0];
@@ -135,7 +148,7 @@ async function existeBus(id){
 };
 
 async function busEstado(id){
-    const sql = "SELECT * FROM bus_estado WHERE id = $1";
+    const sql = "SELECT * FROM bus_estado WHERE bus_id = $1";
     const valor = [id];
 
     const res = await db.query(sql,valor);

@@ -1,7 +1,4 @@
 const db = require("../config/db");
-// const BusStatusData = require("../Data/BusStatus");
-// const BusData = require("../Data/Buses");
-// const ValidStatus = ["ACTIVE","INACTIVE","MAINTENANCE"];
 
 const GetStatus = async () =>{
     const sql = "SELECT * FROM bus_estado";
@@ -22,6 +19,7 @@ const GetStatusById = async(id) =>{
 };
 
 const CreateStatus = async (body)=>{
+    const infoEstado = await GetStatusById(body.bus_id);
     const bus = await existeBus(body.bus_id);
     const existeEstado = await tieneEstado(body.bus_id);
 
@@ -41,7 +39,7 @@ const CreateStatus = async (body)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(Number(body.current_passengers) > bus.capacity){
+    if(Number(body.current_passengers) > infoEstado.current_passengers){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
@@ -53,8 +51,7 @@ const CreateStatus = async (body)=>{
 };
 
 const updateStatus = async (id,body)=>{
-    //const busStatus = tieneEstado(body.bus_id);
-        
+    const infoEstado = await GetStatusById(body.bus_id);
     const bus = await existeBus(body.bus_id);
 
     if(!body || Object.keys(body).length === 0) {
@@ -69,13 +66,9 @@ const updateStatus = async (id,body)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(Number(body.current_passengers) > bus.capacity){
+    if(Number(body.current_passengers) > infoEstado.current_passengers){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
-
-    // if(!busStatus){
-    //     throw new Error("No hay estado registrado para este bus, favor crear uno");
-    // }
 
     const sql = "UPDATE bus_estado SET bus_id = $1, estado = $2, current_passengers = $3, next_stop = $4 where id = $5";
     const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop,id];
