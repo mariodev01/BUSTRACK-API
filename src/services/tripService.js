@@ -20,19 +20,16 @@ const tripById = async (id)=>{
 const create = async (tripBody)=>{
     const existe = await existeBus(tripBody.bus_id);
     const infoBus = await busEstado(tripBody.bus_id);
-    //const fecha = fechaActual();
-
-    const info = "SELECT * FROM bus_estado WHERE id = $1"
+    
+    const infoTrip = "SELECT * FROM trips WHERE bus_id = $1 and status = 'IN_PROGRESS' ";
+    const info = "SELECT * FROM bus_estado WHERE bus_id = $1"
     const valor = [tripBody.bus_id];
 
     const result = await db.query(info,valor);
+    const result2 = await db.query(infoTrip,valor);
 
     const registro = result.rows[0];
-
-    // const existeTrip = trips.some(t =>
-    // t.bus_id === tripBody.bus_id &&
-    // t.status === "IN_PROGRESS"
-    // );
+    const registro2 = result2.rowCount;
 
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
@@ -46,22 +43,17 @@ const create = async (tripBody)=>{
         throw new Error("El bus no tiene estatus actualmente");
     }
 
-    if(registro.status !== "ACTIVE"){
+    if(registro2 >=1){
+        throw new Error("Ya el autobus tiene un viaje en progeso");
+    }
+
+    if(registro.estado !== "ACTIVE"){
         throw new Error("El autobús no está disponible para iniciar un viaje");
     };
 
     if(tripBody.origin.toLowerCase() === tripBody.destination.toLowerCase()){
         throw new Error("El origen y el destino deben ser diferentes.");
     };
-
-    // if(!validStatus.includes(tripBody.status)){
-    //     throw new Error("Estatus no permitido");
-    // };
-
-    // if(existeTrip){
-    //     throw new Error("Ya el bus tiene un viaje en progreso");
-    // };
-
     // La función NOW() va directamente en la sintaxis SQL
     const sql = `
     INSERT INTO trips (bus_id, origin, destination, departure_time, arrival_time, status) 
@@ -69,7 +61,7 @@ const create = async (tripBody)=>{
     RETURNING *
     `;
 
-    // Ajustamos los índices de los parámetros (ahora son 5 en lugar de 6)
+    // // Ajustamos los índices de los parámetros (ahora son 5 en lugar de 6)
     const valores = [
     tripBody.bus_id,
     tripBody.origin,
@@ -77,9 +69,8 @@ const create = async (tripBody)=>{
     null,
     tripBody.status
     ];
-
-    const res = await db.query(sql, valores);
     
+    const res = await db.query(sql, valores);
     return res.rows[0];
 };
 
