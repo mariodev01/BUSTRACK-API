@@ -22,11 +22,11 @@ const getDriverById  = async (id) =>{
 };
 
 const createDriver = async (driverBody) =>{
-    const exists = await existeLicencia(driverBody.license);
-
     if (!driverBody || Object.keys(driverBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
+
+    const exists = await existeLicencia(driverBody.license);
 
     if(driverBody.nombre === "" || driverBody.nombre === " " || driverBody.nombre.length <= 0){
         throw new Error("Nombre no puede estar vacio");

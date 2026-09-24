@@ -18,6 +18,9 @@ const tripById = async (id)=>{
 };
 
 const create = async (tripBody)=>{
+    if(!tripBody || Object.keys(tripBody).length === 0) {
+        throw new Error("Request body cannot be empty.");
+    };
     const existe = await existeBus(tripBody.bus_id);
     const infoBus = await busEstado(tripBody.bus_id);
     
@@ -30,10 +33,6 @@ const create = async (tripBody)=>{
 
     const registro = result.rows[0];
     const registro2 = result2.rowCount;
-
-    if(!tripBody || Object.keys(tripBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
-    };
 
     if(existe <= 0){
         throw new Error("No existe bus con ese Id");
@@ -75,13 +74,13 @@ const create = async (tripBody)=>{
 };
 
 const update = async (id,tripBody)=>{
-    const trip = await tripById(id);
-    const existe = await existeBus(tripBody.bus_id);
-    const fecha = fechaActual();
-
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
+
+    const trip = await tripById(id);
+    const existe = await existeBus(tripBody.bus_id);
+    const fecha = fechaActual();
 
     if(!trip){
         throw new Error("No hay un viaje registrado con ese Id");
@@ -103,7 +102,7 @@ const update = async (id,tripBody)=>{
         throw new Error("Ya el viaje tiene status terminado");
     };
 
-    const sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $6 WHERE id = $7 RETURNING *";
+    const sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $5 WHERE id = $6 RETURNING *";
 
     const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
 

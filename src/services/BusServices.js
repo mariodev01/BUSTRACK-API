@@ -1,6 +1,5 @@
 const db = require("../config/db");
 
-
 const AllBuses = async () =>{
     const sql = "SELECT * FROM buses;"
 
@@ -23,12 +22,12 @@ const BusById = async (id) =>{
 };
 
 const Create = async (BusBody)=>{
-    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
-    const placa = await ExistePlaca(BusBody.plate); 
-
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
+
+    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
+    const placa = await ExistePlaca(BusBody.plate); 
 
     if (!esNumero(BusBody.capacity) || Number(BusBody.capacity) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
@@ -42,7 +41,6 @@ const Create = async (BusBody)=>{
         throw new Error("Ya existe un bus con esa placa");
     };
 
-
     const sql = "INSERT INTO buses(placa,capacity,driver_id) VALUES($1,$2,$3) RETURNING*";
     const valores = [BusBody.plate,BusBody.capacity,BusBody.driverId];
 
@@ -52,12 +50,12 @@ const Create = async (BusBody)=>{
 };
 
 const Update = async (id,BusBody) => {
-    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
-    
     if (!BusBody || Object.keys(BusBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
-    
+
+    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
+        
     if (!esNumero(BusBody.capacity) || Number(BusBody.capacity) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
     };

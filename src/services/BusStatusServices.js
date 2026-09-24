@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const busInfo = require("../services/BusServices");
 
 const GetStatus = async () =>{
     const sql = "SELECT * FROM bus_estado";
@@ -19,13 +20,16 @@ const GetStatusById = async(id) =>{
 };
 
 const CreateStatus = async (body)=>{
-    const infoEstado = await GetStatusById(body.bus_id);
-    const bus = await existeBus(body.bus_id);
-    const existeEstado = await tieneEstado(body.bus_id);
-
     if (!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
+    
+    const infoEstado = await busInfo.BusById(body.bus_id);
+    
+    const bus = await existeBus(body.bus_id);
+    
+    const existeEstado = await tieneEstado(body.bus_id);
+
 
     if(bus <=0){
         throw new Error("No existe bus con ese id");
@@ -39,7 +43,7 @@ const CreateStatus = async (body)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(Number(body.current_passengers) > infoEstado.current_passengers){
+    if(Number(body.current_passengers) > infoEstado.capacity){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
@@ -51,12 +55,13 @@ const CreateStatus = async (body)=>{
 };
 
 const updateStatus = async (id,body)=>{
-    const infoEstado = await GetStatusById(body.bus_id);
-    const bus = await existeBus(body.bus_id);
-
     if(!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
+
+    const infoEstado = await GetStatusById(body.bus_id);
+    const bus = await existeBus(body.bus_id);
+
 
     if(bus <= 0){
         throw new Error("No existe bus con ese id");
