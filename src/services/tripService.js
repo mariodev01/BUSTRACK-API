@@ -1,7 +1,4 @@
 const db = require("../config/db");
-
-const validStatus = ["IN_PROGRESS","FINISHED","CANCELLED"];
-
 const allTrips = async()=>{
     const sql = "SELECT * FROM Trips";
     const res = await db.query(sql);
@@ -80,7 +77,6 @@ const update = async (id,tripBody)=>{
 
     const trip = await tripById(id);
     const existe = await existeBus(tripBody.bus_id);
-    const fecha = fechaActual();
 
     if(!trip){
         throw new Error("No hay un viaje registrado con ese Id");
