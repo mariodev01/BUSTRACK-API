@@ -59,7 +59,7 @@ const updateStatus = async (id,body)=>{
         throw new Error("Request body cannot be empty.");
     };
 
-    const infoEstado = await GetStatusById(body.bus_id);
+    const infoEstado = await busInfo.BusById(body.bus_id);
     const bus = await existeBus(body.bus_id);
 
 
@@ -71,7 +71,7 @@ const updateStatus = async (id,body)=>{
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
-    if(Number(body.current_passengers) > infoEstado.current_passengers){
+    if(Number(body.current_passengers) > infoEstado.capacity){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
