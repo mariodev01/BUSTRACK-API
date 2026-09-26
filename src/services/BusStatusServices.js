@@ -75,7 +75,7 @@ const updateStatus = async (id,body)=>{
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    const sql = "UPDATE bus_estado SET bus_id = $1, estado = $2, current_passengers = $3, next_stop = $4 where id = $5";
+    const sql = "UPDATE bus_estado SET bus_id = $1, estado = $2, current_passengers = $3, next_stop = $4 where id = $5 RETURNING *";
     const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop,id];
     const res = await db.query(sql,valores);
 

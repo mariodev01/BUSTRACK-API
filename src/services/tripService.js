@@ -1,4 +1,5 @@
 const db = require("../config/db");
+
 const allTrips = async()=>{
     const sql = "SELECT * FROM Trips";
     const res = await db.query(sql);
@@ -90,10 +91,6 @@ const update = async (id,tripBody)=>{
         throw new Error("El origen y el destino deben ser diferentes.");
     };
 
-    // if(!validStatus.includes(tripBody.status)){
-    //     throw new Error("Estatus no permitido");
-    // };
-
     if(trip.status === "FINISHED"){
         throw new Error("Ya el viaje tiene status terminado");
     };
@@ -140,19 +137,4 @@ async function busEstado(id){
     const res = await db.query(sql,valor);
 
     return res.rowCount;
-};
-
-function fechaActual(){
-    const hoy = new Date();
-
-    //Formato local según el navegador/país
-    const fechaLocal = hoy.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-
-    return fechaLocal;
 };
