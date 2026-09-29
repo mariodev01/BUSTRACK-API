@@ -1,0 +1,161 @@
+BusTrack=# \d drivers
+                                         Table "public.drivers"
+     Column      |          Type          | Collation | Nullable |               Default
+
+-----------------+------------------------+-----------+----------+---------------------------
+-----------
+ id              | integer                |           | not null | nextval('drigvers_id_seq':
+:regclass)
+ nombre          | character varying(100) |           | not null |
+ numero_licencia | character varying(20)  |           | not null |
+Indexes:
+    "drigvers_pkey" PRIMARY KEY, btree (id)
+Referenced by:
+    TABLE "buses" CONSTRAINT "buses_driver_id_fkey" FOREIGN KEY (driver_id) REFERENCES driver
+s(id)
+
+*******----------------------------------------------------------------------------------------------******
+
+BusTrack=# \d buses
+                                     Table "public.buses"
+  Column   |          Type          | Collation | Nullable |              Default
+
+-----------+------------------------+-----------+----------+---------------------------------
+--
+ id        | integer                |           | not null | nextval('buses_id_seq'::regclass
+)
+ placa     | character varying(100) |           | not null |
+ capacity  | integer                |           |          |
+ driver_id | integer                |           |          |
+Indexes:
+    "buses_pkey" PRIMARY KEY, btree (id)
+    "buses_placa_key" UNIQUE CONSTRAINT, btree (placa)
+Foreign-key constraints:
+    "buses_driver_id_fkey" FOREIGN KEY (driver_id) REFERENCES drivers(id)
+Referenced by:
+    TABLE "bus_estado" CONSTRAINT "bus_estado_bus_id_fkey" FOREIGN KEY (bus_id) REFERENCES bu
+ses(id)
+    TABLE "trips" CONSTRAINT "trips_bus_id_fkey" FOREIGN KEY (bus_id) REFERENCES buses(id)
+
+*******----------------------------------------------------------------------------------------------******
+BusTrack=# \d bus_estado
+                                          Table "public.bus_estado"
+       Column       |          Type          | Collation | Nullable |                Default
+
+--------------------+------------------------+-----------+----------+------------------------
+----------------
+ id                 | integer                |           | not null | nextval('bus_estado_id_
+seq'::regclass)
+ bus_id             | integer                |           |          |
+ estado             | estado_bus             |           | not null |
+ current_passengers | integer                |           |          |
+ next_stop          | character varying(100) |           |          |
+Indexes:
+    "bus_estado_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "bus_estado_bus_id_fkey" FOREIGN KEY (bus_id) REFERENCES buses(id)
+
+*******----------------------------------------------------------------------------------------------******
+BusTrack=# \d trips
+                                          Table "public.trips"
+     Column     |            Type             | Collation | Nullable |              Default
+
+----------------+-----------------------------+-----------+----------+-----------------------
+------------
+ id             | integer                     |           | not null | nextval('trips_id_seq'
+::regclass)
+ bus_id         | integer                     |           |          |
+ origin         | character varying(200)      |           |          |
+ destination    | character varying(200)      |           |          |
+ departure_time | timestamp without time zone |           |          |
+ arrival_time   | timestamp without time zone |           |          |
+ status         | estado_pedido               |           |          |
+Indexes:
+    "trips_pkey" PRIMARY KEY, btree (id)
+Foreign-key constraints:
+    "trips_bus_id_fkey" FOREIGN KEY (bus_id) REFERENCES buses(id)
+
+
+
+
+
+
+selects
+
+1****SELECT
+    tc.table_name,
+    kcu.column_name,
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+    ON tc.constraint_name = kcu.constraint_name
+JOIN information_schema.constraint_column_usage AS ccu
+    ON ccu.constraint_name = tc.constraint_name
+WHERE tc.constraint_type = 'FOREIGN KEY';
+
+--------------------------------------------------------------------
+"table_name"	"column_name"	"foreign_table_name"	"foreign_column_name"
+"buses"	"driver_id"	"drivers"	"id"
+"bus_estado"	"bus_id"	"buses"	"id"
+"trips"	"bus_id"	"buses"	"id"
+
+
+
+
+
+
+2*****SELECT
+    table_name,
+    column_name,
+    is_nullable
+FROM information_schema.columns
+WHERE table_schema = 'public'
+ORDER BY table_name, ordinal_position;
+
+------------------------------------------------------------------------
+"table_name"	"column_name"	"is_nullable"
+"bus_estado"	"id"	"NO"
+"bus_estado"	"bus_id"	"YES"
+"bus_estado"	"estado"	"NO"
+"bus_estado"	"current_passengers"	"YES"
+"bus_estado"	"next_stop"	"YES"
+"buses"	"id"	"NO"
+"buses"	"placa"	"NO"
+"buses"	"capacity"	"YES"
+"buses"	"driver_id"	"YES"
+"drivers"	"id"	"NO"
+"drivers"	"nombre"	"NO"
+"drivers"	"numero_licencia"	"NO"
+"trips"	"id"	"NO"
+"trips"	"bus_id"	"YES"
+"trips"	"origin"	"YES"
+"trips"	"destination"	"YES"
+"trips"	"departure_time"	"YES"
+"trips"	"arrival_time"	"YES"
+"trips"	"status"	"YES"
+
+
+
+3*******SELECT
+    t.typname AS enum_name,
+    e.enumlabel AS value
+FROM pg_type t
+JOIN pg_enum e
+    ON t.oid = e.enumtypid
+ORDER BY t.typname, e.enumsortorder;
+
+----------------------------------------------------------------------------------
+"enum_name"	"value"
+"estado_bus"	"ACTIVE"
+"estado_bus"	"INACTIVE"
+"estado_bus"	"MAINTENANCE"
+"estado_pedido"	"IN_PROGRESS"
+"estado_pedido"	"FINISHED"
+"estado_pedido"	"CANCELLED"
+
+
+
+
+
+
