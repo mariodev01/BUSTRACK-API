@@ -3,6 +3,7 @@ const driverRoutes = require("./routes/driver.routes");
 const busesRoutes = require("../src/routes/bus.routes");
 const statusRoutes = require("../src/routes/busStatus.routes");
 const tripRoutes = require("../src/routes/trip.routes");
+const errorHandler = require("../src/middlewares/error.middleware");
 
 const app = express();
 
@@ -15,5 +16,7 @@ app.use("/buses", busesRoutes);
 app.use("/bus-status", statusRoutes);
 
 app.use("/trips", tripRoutes);
+
+app.use(errorHandler);
 
 module.exports = app;

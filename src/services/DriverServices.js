@@ -1,104 +1,90 @@
-const db = require("../config/db");
+const driverRes = require("../repositories/DriverRepository");
 
 const getAllDrivers = async ()=>{
-    const sql = "select * from drivers";
-
-    const resultado = await db.query(sql);
-
-    return resultado.rows;
+    const res = await driverRes.GetAll();
+    return res;
 };
 
 const getDriverById  = async (id) =>{
-    const sql = "select * from drivers WHERE id = $1";
-    
-    const valores = [id];
+    const res = await driverRes.GetById(id);
 
-    const resultado = await db.query(sql, valores);
-    if (resultado.rowCount <=0) {
-        throw new Error("No existe conductor/a con ese Id");
-    }
+    if (!res) {
+        const error = new Error('El conductor solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    };
 
-    return resultado.rows[0];
+    return res;
 };
 
 const createDriver = async (driverBody) =>{
     if (!driverBody || Object.keys(driverBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
+        const error = new Error("La solicitud no puede estar vacia");
+        error.status = 400;
+        throw error;
     };
 
-    const exists = await existeLicencia(driverBody.license);
-
     if(driverBody.nombre === "" || driverBody.nombre === " " || driverBody.nombre.length <= 0){
-        throw new Error("Nombre no puede estar vacio");
+        const error = new Error("Nombre no puede estar vacio");
+        error.status = 400;
+        throw error;
     };
 
     if(driverBody.license === "" || driverBody.license === " " || driverBody.license.length <= 0){
-        throw new Error("Licencia no puede estar vacio");
+        const error = new Error("Licencia no puede estar vacio");
+        error.status = 400;
+        throw error;
     };
 
-    if(exists){
-        throw new Error("La licencia ya existe");
+    const exists = await driverRes.Exist(driverBody.license);
+
+    if(exists >=1){
+        const error = new Error("La licencia ya existe");
+        error.status = 409;
+        throw error;
     };
 
-    const sql = "INSERT INTO drivers (nombre, numero_licencia) VALUES ($1, $2) RETURNING *";
-    const valores = [driverBody.nombre, driverBody.license];
+    const res = driverRes.Create(driverBody.nombre,driverBody.license);
 
-    const resultado = await db.query(sql, valores);
-    
-    return resultado.rows[0];
+    return res;
 };
 
 const Update = async (id,driverBody) =>{
-    if (!driverBody || Object.keys(driverBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
+    if(!driverBody || Object.keys(driverBody).length === 0) {
+        const error = new Error("La solicitud no puede estar vacia");
+        error.status = 400;
+        throw error;
     };
 
     if(driverBody.nombre === "" || driverBody.nombre === " " || driverBody.nombre.length <= 0){
-        throw new Error("Nombre no puede estar vacio");
+        const error = new Error("Nombre no puede estar vacio");
+        error.status = 400;
+        throw error;
     };
 
     if(driverBody.license === "" || driverBody.license === " " || driverBody.license.length <= 0){
-        throw new Error("Licencia no puede estar vacio");
+        const error = new Error("Licencia no puede estar vacio");
+        error.status = 400;
+        throw error;
     };
 
-    const exists = "SELECT * FROM drivers WHERE numero_licencia = $1 and id != $2";
-    const valor = [driverBody.license,id];
+    const exists = driverRes.ExistUpdate(driverBody.license,id);
 
-    const res = await db.query(exists,valor);
+    if(exists >= 1){
+        const error = new Error("Ya existe un conductor con esa licencia");
+        error.status = 409;
+        throw error;
+    };
 
-    if(res.rowCount >= 1){
-        throw new Error("Ya existe un conductor con esa licencia");
-    }
+    const res2 = driverRes.Update(driverBody.nombre,driverBody.license, id);
 
-    const sql = 'UPDATE drivers SET nombre = $1, numero_licencia = $2 WHERE id = $3 RETURNING *';
-    const valores = [driverBody.nombre,driverBody.license, id];
-
-    const resultado = await db.query(sql, valores);
-    return resultado.rows[0]; // Devuelve el registro modificado
+    return res2;
 };
 
 const Delete = async (id) =>{
-    const sql = 'DELETE FROM drivers WHERE id = $1';
-    const valores = [id];
+    const res = driverRes.Delete(id);
 
-    const resultado = await db.query(sql, valores);
-    
-    //rowCount indica cuántas filas fueron eliminadas
-    
-    return resultado.rowCount > 0;
-};
-
-const existeLicencia = async (licencia) =>{
-    const exists = "SELECT * FROM drivers WHERE numero_licencia = $1";
-    const valor = [licencia];
-
-    const res = await db.query(exists,valor);
-
-    if(res.rowCount >= 1){
-        return true;
-    }else{
-        return false;
-    }
+    return res;
 };
 
 module.exports = {
