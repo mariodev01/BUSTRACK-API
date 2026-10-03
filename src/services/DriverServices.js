@@ -36,13 +36,13 @@ const createDriver = async (driverBody) =>{
         throw error;
     };
 
-    const exists = await driverRes.Exist(driverBody.license);
+    // const exists = await driverRes.Exist(driverBody.license);
 
-    if(exists >=1){
-        const error = new Error("La licencia ya existe");
-        error.status = 409;
-        throw error;
-    };
+    // if(exists >=1){
+    //     const error = new Error("La licencia ya existe");
+    //     error.status = 409;
+    //     throw error;
+    // };
 
     const res = await driverRes.Create(driverBody.nombre,driverBody.license);
 
