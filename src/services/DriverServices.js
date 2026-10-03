@@ -2,7 +2,7 @@ const driverRes = require("../repositories/DriverRepository");
 
 const getAllDrivers = async ()=>{
     const res = await driverRes.GetAll();
-    return res;
+    return res || [];
 };
 
 const getDriverById  = async (id) =>{
@@ -44,7 +44,7 @@ const createDriver = async (driverBody) =>{
         throw error;
     };
 
-    const res = driverRes.Create(driverBody.nombre,driverBody.license);
+    const res = await driverRes.Create(driverBody.nombre,driverBody.license);
 
     return res;
 };
@@ -68,7 +68,7 @@ const Update = async (id,driverBody) =>{
         throw error;
     };
 
-    const exists = driverRes.ExistUpdate(driverBody.license,id);
+    const exists = await driverRes.ExistUpdate(driverBody.license,id);
 
     if(exists >= 1){
         const error = new Error("Ya existe un conductor con esa licencia");
@@ -76,13 +76,13 @@ const Update = async (id,driverBody) =>{
         throw error;
     };
 
-    const res2 = driverRes.Update(driverBody.nombre,driverBody.license, id);
+    const res2 = await driverRes.Update(driverBody.nombre,driverBody.license, id);
 
     return res2;
 };
 
 const Delete = async (id) =>{
-    const res = driverRes.Delete(id);
+    const res = await driverRes.Delete(id);
 
     return res;
 };

@@ -1,14 +1,12 @@
 const ServiceDriver = require("../services/DriverServices");
 
-const getDrivers = async (req,res) =>{
+const getDrivers = async (req,res,next) =>{
     try {
         const drivers2 = await ServiceDriver.getAllDrivers();
 
-        res.json(drivers2);
+        res.status(200).json(drivers2);
     } catch (error) {
-        res.status(404).json({
-            message: error.message
-        });
+        next(error);
     }
 };
 
