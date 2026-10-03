@@ -11,7 +11,7 @@ const pgErrorHandler = (err, req, res, next) => {
             return res.status(409).json({
                 status: 409,
                 error: 'Conflict',
-                message: 'El registro ya existe en la base de datos. BLAHAHAHAHHAHAHA'
+                message: 'El registro ya existe en la base de datos.'
             });
 
         case '23503': // FOREIGN KEY violation

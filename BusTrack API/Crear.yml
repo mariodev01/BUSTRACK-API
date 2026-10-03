@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "nombre": "Pedro",
+        "nombre": "miriam",
         "license": "B123"
       }
   auth: inherit
