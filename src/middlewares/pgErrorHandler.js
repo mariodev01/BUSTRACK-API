@@ -27,6 +27,12 @@ const pgErrorHandler = (err, req, res, next) => {
                 error: 'Bad Request',
                 message: 'Faltan campos obligatorios por completar.'
             });
+        case '23514': // // Operación de inserción o actualización
+            return res.status(400).json({
+                status: 400,
+                error: 'Bad Request',
+                message: 'No se permiten campos vacios'
+            });
 
         default:
             // Si es un código de Postgres que no mapeaste de forma específica,
