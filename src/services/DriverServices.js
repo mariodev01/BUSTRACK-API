@@ -45,8 +45,6 @@ const Delete = async (id) =>{
         error.status = 404; // Marcamos que es un 404 Not Found
         throw error;
     };
-
-
     const res = await driverRes.Delete(id);
 
     return res;

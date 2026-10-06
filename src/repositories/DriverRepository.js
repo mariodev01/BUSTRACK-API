@@ -1,6 +1,5 @@
 const db = require("../config/db");
 
-
 const GetAll = async ()=>{
     const sql = "SELECT * FROM drivers";
 
@@ -45,28 +44,10 @@ const Delete = async (id)=>{
     return resultado.rowCount > 0;
 };
 
-const Exist = async (licencia)=>{
-    const exists = "SELECT * FROM drivers WHERE numero_licencia = $1";
-    
-    const res = await db.query(exists,[licencia]);
-    
-    return res.rowCount;
-};
-
-const ExistUpdate = async (license,id)=>{
-    const exists = "SELECT * FROM drivers WHERE numero_licencia = $1 and id != $2";
-
-    const res = await db.query(exists,[license,id]);
-
-    return res.rowCount;
-};
-
 module.exports = {
     GetAll,
     GetById,
     Create,
     Update,
     Delete,
-    Exist,
-    ExistUpdate
 }
