@@ -23,20 +23,13 @@ const CreateStatus = async (body)=>{
     if (!body || Object.keys(body).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
-    
+
     const infoEstado = await busInfo.BusById(body.bus_id);
     
     const bus = await existeBus(body.bus_id);
-    
-    const existeEstado = await tieneEstado(body.bus_id);
-
 
     if(bus <=0){
         throw new Error("No existe bus con ese id");
-    };
-
-    if(existeEstado >=1 ){
-        throw new Error("Ya ese bus tiene un estado asignado");
     };
 
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
@@ -97,15 +90,6 @@ const busByStatus = (status)=>{
 
 function esNumero(valor) {
     return !isNaN(valor);
-};
-
-async function tieneEstado(BusID){
-    const sql = "SELECT * FROM bus_estado WHERE bus_id = $1";
-    const valor = [BusID];
-
-    const res = await db.query(sql,valor);
-
-    return res.rowCount;
 };
 
 async function existeBus(busId){
