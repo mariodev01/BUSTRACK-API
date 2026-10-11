@@ -101,10 +101,9 @@ const update = async (id,tripBody)=>{
         sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,status = $4 WHERE id = $5 RETURNING *";
     };
 
-    if(tripBody.status === "FINISHED"){
+    if(tripBody.status === "FINISHED" || tripBody.status === "CANCELLED"){
         sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $4 WHERE id = $5 RETURNING *";
     };
-
     const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
 
     const res = await db.query(sql,valores);
