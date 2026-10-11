@@ -76,6 +76,8 @@ const update = async (id,tripBody)=>{
         throw new Error("Request body cannot be empty.");
     };
 
+    let sql = "";
+
     const trip = await tripById(id);
     const existe = await existeBus(tripBody.bus_id);
 
@@ -92,10 +94,16 @@ const update = async (id,tripBody)=>{
     };
 
     if(trip.status === "FINISHED"){
-        throw new Error("Ya el viaje tiene status terminado");
+        throw new Error("Ya el viaje tiene status terminado y no se puede modificar sus datos");
     };
 
-    const sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $4 WHERE id = $5 RETURNING *";
+    if(trip.status === "IN_PROGRESS"){
+        sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,status = $4 WHERE id = $5 RETURNING *";
+    };
+
+    if(tripBody.status === "FINISHED"){
+        sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $4 WHERE id = $5 RETURNING *";
+    };
 
     const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
 
