@@ -77,6 +77,7 @@ const update = async (id,tripBody)=>{
     };
 
     let sql = "";
+    let valores = [];
 
     const trip = await tripById(id);
     const existe = await existeBus(tripBody.bus_id);
@@ -99,13 +100,18 @@ const update = async (id,tripBody)=>{
 
     if(trip.status === "IN_PROGRESS"){
         sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,status = $4 WHERE id = $5 RETURNING *";
+        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
     };
 
     if(tripBody.status === "FINISHED"){
         sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $4 WHERE id = $5 RETURNING *";
+        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
     };
-    const valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
 
+    if(tripBody.status === "CANCELLED"){
+        sql = "UPDATE Trips SET status = $1 WHERE id = $2 RETURNING *";
+        valores = [tripBody.status,id];
+    };
     const res = await db.query(sql,valores);
 
     return res.rows[0];
