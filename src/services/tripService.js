@@ -98,6 +98,10 @@ const update = async (id,tripBody)=>{
         throw new Error("Ya el viaje tiene status terminado y no se puede modificar sus datos");
     };
 
+    if(trip.status === "CANCELLED"){
+        throw new Error("El viaje tiene estatus cancelado y no se puede modificar sus datos");
+    }
+
     if(trip.status === "IN_PROGRESS"){
         sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,status = $4 WHERE id = $5 RETURNING *";
         valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
