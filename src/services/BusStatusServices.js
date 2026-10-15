@@ -1,22 +1,24 @@
 const db = require("../config/db");
 const busInfo = require("../services/BusServices");
 
+const busEstadoRes = require("../repositories/BusStatusRepository");
+
+
 const GetStatus = async () =>{
-    const sql = "SELECT * FROM bus_estado";
-    const res = await db.query(sql);    
-    return res.rows;
+    const res = await busEstadoRes.GetAll();
+    return res || [];
 };
 
 const GetStatusById = async(id) =>{
-    const sql = "SELECT * FROM bus_estado WHERE id = $1";
-    const valor = [id];
+    const res = await busEstadoRes.GetById(id);
 
-    const res = await db.query(sql,valor);
+    if (!res) {
+        const error = new Error('El Bus Estado solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    };
 
-    if(res.rowCount <= 0){
-        throw new Error("No existe estado con ese Id");
-    }
-    return res.rows[0];
+    return res;
 };
 
 const CreateStatus = async (body)=>{
@@ -26,7 +28,7 @@ const CreateStatus = async (body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
     
-    const bus = await existeBus(body.bus_id);
+    const bus = await busEstadoRes.BusExist(body.bus_id);
 
     if(bus <=0){
         throw new Error("No existe bus con ese id");
@@ -40,11 +42,9 @@ const CreateStatus = async (body)=>{
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    const sql = "INSERT INTO bus_estado(bus_id,estado,current_passengers,next_stop) VALUES($1,$2,$3,$4) RETURNING *";
-    const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop];
-    const res = await db.query(sql,valores);
+    const res = await busEstadoRes.Create(body.bus_id,body.status,body.current_passengers,body.next_stop);
 
-    return res.rows[0];    
+    return res    
 };
 
 const updateStatus = async (id,body)=>{
@@ -53,8 +53,8 @@ const updateStatus = async (id,body)=>{
     };
 
     const infoEstado = await busInfo.BusById(body.bus_id);
-    const bus = await existeBus(body.bus_id);
 
+    const bus = await busEstadoRes.BusExist(body.bus_id);
 
     if(bus <= 0){
         throw new Error("No existe bus con ese id");
@@ -68,19 +68,24 @@ const updateStatus = async (id,body)=>{
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
 
-    const sql = "UPDATE bus_estado SET bus_id = $1, estado = $2, current_passengers = $3, next_stop = $4 where id = $5 RETURNING *";
-    const valores = [body.bus_id,body.status,body.current_passengers,body.next_stop,id];
-    const res = await db.query(sql,valores);
+    const res2 = await busEstadoRes.Update(body.bus_id,body.status,body.current_passengers,body.next_stop,id);
 
-    return res.rows[0];
+    return res2;
 };
 
 const deleteStatus = async (id)=>{
-    const sql = "DELETE FROM bus_estado WHERE id = $1";
-    const valor = [id];
-    const res = await db.query(sql,valor);
+    const busS = await busEstadoRes.GetById(id);
 
-    return res.rows;
+    if (!busS) {
+        const error = new Error('El Bus Estado solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    };
+
+    const res = await busEstadoRes.Delete(id);
+
+    return res;
+
 };
 
 //Definir bien a ver que es lo que quieren

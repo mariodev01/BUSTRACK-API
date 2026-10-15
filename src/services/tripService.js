@@ -23,7 +23,7 @@ const create = async (tripBody)=>{
     const infoBus = await busEstado(tripBody.bus_id);
     
     const infoTrip = "SELECT * FROM trips WHERE bus_id = $1 and status = 'IN_PROGRESS' ";
-    const info = "SELECT * FROM bus_estado WHERE bus_id = $1"
+    const info = "SELECT * FROM bus_estado WHERE bus_id = $1";
     const valor = [tripBody.bus_id];
 
     const result = await db.query(info,valor);
@@ -31,6 +31,9 @@ const create = async (tripBody)=>{
 
     const registro = result.rows[0];
     const registro2 = result2.rowCount;
+
+    let sql = '';
+    let valores = [];
 
     if(existe <= 0){
         throw new Error("No existe bus con ese Id");
@@ -51,21 +54,19 @@ const create = async (tripBody)=>{
     if(tripBody.origin.toLowerCase() === tripBody.destination.toLowerCase()){
         throw new Error("El origen y el destino deben ser diferentes.");
     };
-    // La función NOW() va directamente en la sintaxis SQL
-    const sql = `
-    INSERT INTO trips (bus_id, origin, destination, departure_time, arrival_time, status) 
-    VALUES ($1, $2, $3, NOW(), $4, $5) 
-    RETURNING *
-    `;
 
-    // // Ajustamos los índices de los parámetros (ahora son 5 en lugar de 6)
-    const valores = [
-    tripBody.bus_id,
-    tripBody.origin,
-    tripBody.destination,
-    null,
-    tripBody.status
-    ];
+    if(tripBody.status === "FINISHED"){
+        sql = 'INSERT INTO trips (bus_id, origin, destination, departure_time, arrival_time, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
+        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.departure,tripBody.arrival,tripBody.status];
+    }else if(tripBody.status === "CANCELLED"){
+        sql = 'INSERT INTO trips (bus_id, origin, destination,status) VALUES ($1, $2, $3, $4) RETURNING *';
+        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status];
+    }else{
+        // La función NOW() va directamente en la sintaxis SQL
+        sql = 'INSERT INTO trips (bus_id, origin, destination, departure_time,status) VALUES ($1,$2,$3,NOW(),$4) RETURNING *';
+        //Ajustamos los índices de los parámetros (ahora son 5 en lugar de 6)
+        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status];
+    };
     
     const res = await db.query(sql, valores);
     return res.rows[0];
