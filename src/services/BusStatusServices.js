@@ -30,8 +30,11 @@ const CreateStatus = async (body)=>{
     };
 
     if(Number(body.current_passengers) > infoEstado.capacity){
-        throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
+        const error = new Error('La cantidad de pasajeros supera la capacidad del autobús');
+        error.status = 400;
+        throw error;
     };
+    
     const res = await busEstadoRes.Create(body.bus_id,body.status,body.current_passengers,body.next_stop);
 
     return res
@@ -52,9 +55,11 @@ const updateStatus = async (id,body)=>{
     };
 
     if(Number(body.current_passengers) > infoEstado.capacity){
-        throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
+        const error = new Error('La cantidad de pasajeros supera la capacidad del autobús');
+        error.status = 400;
+        throw error;
     };
-
+    
     const res2 = await busEstadoRes.Update(body.bus_id,body.status,body.current_passengers,body.next_stop,id);
 
     return res2;
