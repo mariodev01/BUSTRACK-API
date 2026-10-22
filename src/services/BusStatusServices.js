@@ -28,12 +28,12 @@ const CreateStatus = async (body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
     
-    const bus = await busEstadoRes.BusExist(body.bus_id);
+    // Comente este metodo porque InfoEstado hace el trabajo
+    //const bus = await busEstadoRes.BusExist(body.bus_id);
 
-    if(bus <=0){
-        throw new Error("No existe bus con ese id");
-    };
-
+    // if(bus <=0){
+    //     throw new Error("No existe bus con ese id");
+    // };
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
@@ -41,10 +41,9 @@ const CreateStatus = async (body)=>{
     if(Number(body.current_passengers) > infoEstado.capacity){
         throw new Error("La cantidad de pasajeros supera la capacidad del autobús");
     };
-
     const res = await busEstadoRes.Create(body.bus_id,body.status,body.current_passengers,body.next_stop);
 
-    return res    
+    return res
 };
 
 const updateStatus = async (id,body)=>{
@@ -54,11 +53,11 @@ const updateStatus = async (id,body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
 
-    const bus = await busEstadoRes.BusExist(body.bus_id);
+    // const bus = await busEstadoRes.BusExist(body.bus_id);
 
-    if(bus <= 0){
-        throw new Error("No existe bus con ese id");
-    };
+    // if(bus <= 0){
+    //     throw new Error("No existe bus con ese id");
+    // };
 
     if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
