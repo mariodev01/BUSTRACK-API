@@ -35,7 +35,7 @@ const Delete = async(id)=>{
 
     const res = await db.query(sql,[id]);
 
-    return res.rows;    
+    return res.rowCount > 0;    
 };
 
 const BusExist = async(busId)=>{

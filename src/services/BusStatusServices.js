@@ -1,8 +1,5 @@
-const db = require("../config/db");
 const busInfo = require("../services/BusServices");
-
 const busEstadoRes = require("../repositories/BusStatusRepository");
-
 
 const GetStatus = async () =>{
     const res = await busEstadoRes.GetAll();
@@ -27,14 +24,8 @@ const CreateStatus = async (body)=>{
     };
 
     const infoEstado = await busInfo.BusById(body.bus_id);
-    
-    // Comente este metodo porque InfoEstado hace el trabajo
-    //const bus = await busEstadoRes.BusExist(body.bus_id);
 
-    // if(bus <=0){
-    //     throw new Error("No existe bus con ese id");
-    // };
-    if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
+    if(!esNumero(body.current_passengers) || Number(body.current_passengers) < 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
@@ -51,15 +42,12 @@ const updateStatus = async (id,body)=>{
         throw new Error("Request body cannot be empty.");
     };
 
+    //No se si esto es una buena practica
+    await GetStatusById(id);
+
     const infoEstado = await busInfo.BusById(body.bus_id);
 
-    // const bus = await busEstadoRes.BusExist(body.bus_id);
-
-    // if(bus <= 0){
-    //     throw new Error("No existe bus con ese id");
-    // };
-
-    if(!esNumero(body.current_passengers) || Number(body.current_passengers) <= 0){
+    if(!esNumero(body.current_passengers) || Number(body.current_passengers) < 0){
         throw new Error("Capacidad del bus ingresada no es correcta");
     };
 
@@ -80,28 +68,13 @@ const deleteStatus = async (id)=>{
         error.status = 404; // Marcamos que es un 404 Not Found
         throw error;
     };
-
     const res = await busEstadoRes.Delete(id);
 
     return res;
-
 };
-
-//Definir bien a ver que es lo que quieren
-const busByStatus = (status)=>{
-    //const buses
-}
 
 function esNumero(valor) {
     return !isNaN(valor);
-};
-
-async function existeBus(busId){
-    const sql = "SELECT * FROM buses WHERE id = $1";
-    const valor = [busId];
-    const res = await db.query(sql,valor);
-
-    return res.rowCount;
 };
 
 module.exports = {
