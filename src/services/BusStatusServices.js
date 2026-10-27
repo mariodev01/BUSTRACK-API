@@ -25,8 +25,8 @@ const CreateStatus = async (body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
 
-    if(!esNumero(body.current_passengers) || Number(body.current_passengers) < 0){
-        throw new Error("Capacidad del bus ingresada no es correcta");
+    if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
+        console.log("Cuanto necesito, tu rio y tu lluvia");
     };
 
     if(Number(body.current_passengers) > infoEstado.capacity){
@@ -34,7 +34,7 @@ const CreateStatus = async (body)=>{
         error.status = 400;
         throw error;
     };
-    
+
     const res = await busEstadoRes.Create(body.bus_id,body.status,body.current_passengers,body.next_stop);
 
     return res
@@ -50,8 +50,8 @@ const updateStatus = async (id,body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
 
-    if(!esNumero(body.current_passengers) || Number(body.current_passengers) < 0){
-        throw new Error("Capacidad del bus ingresada no es correcta");
+    if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
+        console.log("Cuanto necesito, tu rio y tu lluvia");
     };
 
     if(Number(body.current_passengers) > infoEstado.capacity){
@@ -76,10 +76,6 @@ const deleteStatus = async (id)=>{
     const res = await busEstadoRes.Delete(id);
 
     return res;
-};
-
-function esNumero(valor) {
-    return !isNaN(valor);
 };
 
 module.exports = {
