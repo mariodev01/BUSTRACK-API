@@ -1,124 +1,67 @@
 const db = require("../config/db");
+const br = require("../repositories/BusRepository");
 
 const AllBuses = async () =>{
-    const sql = "SELECT * FROM buses;"
-
-    const res = await db.query(sql);
-
-    return res.rows;
+    const res = await br.GetAll();
+    
+    return res || [];
 };
 
 const BusById = async (id) =>{
-    const sql = "SELECT * FROM buses where id = $1";
-    const valor = [id];
-
-    const res = await db.query(sql,valor);
+    const res = await br.GetById(id);
     
-    if(res.rowCount <=0){
-        throw new Error("No existe Bus con ese Id");        
+    if (!res) {
+        const error = new Error('El bus solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
     };
-
-    return res.rows[0];
+    
+    return res;
 };
 
 const Create = async (BusBody)=>{
-    if (!BusBody || Object.keys(BusBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
-    };
+    const res = await br.Create(BusBody.plate,BusBody.capacity,BusBody.driverId);
 
-    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
-    const placa = await ExistePlaca(BusBody.plate); 
-
-    if (!esNumero(BusBody.capacity) || Number(BusBody.capacity) <= 0){
-        throw new Error("Capacidad del bus ingresada no es correcta");
-    };
-
-    if(conductor <=0){
-        throw new Error("No existe conductor con ese Id");
-    };
-
-    if(placa >= 1){
-        throw new Error("Ya existe un bus con esa placa");
-    };
-
-    const sql = "INSERT INTO buses(placa,capacity,driver_id) VALUES($1,$2,$3) RETURNING*";
-    const valores = [BusBody.plate,BusBody.capacity,BusBody.driverId];
-
-    const res = await db.query(sql,valores);
-
-    return res.rows[0];
+    return res;
 };
 
 const Update = async (id,BusBody) => {
-    if (!BusBody || Object.keys(BusBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
+    const res = await br.GetById(id);
+
+    if (!res) {
+        const error = new Error('El bus solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
     };
 
-    const conductor = await ExisteConductor(Number(BusBody.driverId)); 
-        
-    if (!esNumero(BusBody.capacity) || Number(BusBody.capacity) <= 0){
-        throw new Error("Capacidad del bus ingresada no es correcta");
-    };
+    const res2 = await br.Update(BusBody.plate,BusBody.capacity,BusBody.driverId, id);
 
-    if(conductor <=0){
-        throw new Error("No existe conductor con ese Id");
-    };
-
-    const queryPlate = "SELECT * FROM buses where placa = $1 and id != $2";
-    const parameters = [BusBody.plate,id];
-
-    const ress = await db.query(queryPlate,parameters);
-
-    if(ress.rowCount >=1){
-        throw new Error("Ya existe un bus con esa placa!");
-    }
-
-    const sql = "UPDATE buses set placa = $1, capacity = $2, driver_id = $3 where id = $4 RETURNING *";
-    const valores = [BusBody.plate,BusBody.capacity,BusBody.driverId,id];
-
-    const res = await db.query(sql,valores);
-
-    return res.rows[0];
+    return res2;
 };
 
-const Delete = async (id)=>{
-    const sql = "DELETE  FROM buses where id = $1";
-    const valores = [id];
-
-    const res = await db.query(sql,valores);
-
-    return res.rowCount > 0;
-};
-
-function esNumero(valor) {
-    return !isNaN(valor);
+const DeleteBus = async (id)=>{
+    const bus = await br.GetById(id);
+    
+    if (!bus) {
+        const error = new Error('El bus solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    };
+    const res = await br.Delete(id);
+    
+    return res;
 };
 
 const busByDriverId = async (id)=>{
-    const sql = "SELECT * FROM buses where driver_id = $1";
-    const valores = [id];
+    const driver = await br.GetBusDrivers(id);
 
-    const res = await db.query(sql,valores);
+    if (!driver){
+        const error = new Error('El conductor solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    }
 
-    return res.rows;
-};
-
-const ExisteConductor = async (driverID) =>{
-    const sql = "select * from drivers WHERE id = $1";  
-    const valores = [driverID];
-
-    const res = await db.query(sql,valores);
-
-    return res.rowCount;
-};
-
-const ExistePlaca = async (placa) => {
-    const sql = "SELECT * FROM buses where placa = $1";
-    const valores = [placa];
-
-    const res = await db.query(sql,valores);
-
-    return res.rowCount;
+    return driver;
 };
 
 module.exports = {
@@ -126,6 +69,6 @@ module.exports = {
     BusById,
     Create,
     Update,
-    Delete,
+    DeleteBus,
     busByDriverId,
 };
