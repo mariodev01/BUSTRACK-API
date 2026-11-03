@@ -26,7 +26,9 @@ const CreateStatus = async (body)=>{
     const infoEstado = await busInfo.BusById(body.bus_id);
 
     if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
-        console.log("Cuanto necesito, tu rio y tu lluvia");
+        const error = new Error('El valor digitado no es un numero o es menor a cero');
+        error.status = 400;
+        throw error;
     };
 
     if(Number(body.current_passengers) > infoEstado.capacity){
@@ -51,7 +53,9 @@ const updateStatus = async (id,body)=>{
     const infoEstado = await busInfo.BusById(body.bus_id);
 
     if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
-        console.log("Cuanto necesito, tu rio y tu lluvia");
+        const error = new Error('El valor digitado no es un numero o es menor a cero');
+        error.status = 400;
+        throw error;
     };
 
     if(Number(body.current_passengers) > infoEstado.capacity){
