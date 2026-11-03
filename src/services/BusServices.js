@@ -26,6 +26,28 @@ const Create = async (BusBody)=>{
 
     if(isNaN(BusBody.capacity)){
         const error = new Error('Solo se aceptan numeros');
+        error.status = 400;
+        throw error;
+    };
+
+    if(BusBody.capacity < 0){
+        const error = new Error('La capacidad del bus no puede ser menor a 0');
+        error.status = 400;
+        throw error;
+    };
+
+    const res = await br.Create(BusBody.plate,BusBody.capacity,BusBody.driverId);
+
+    return res;
+};
+
+const Update = async (id,BusBody) => {
+    if(!BusBody || Object.keys(BusBody).length === 0) {
+        throw new Error("Request body cannot be empty.");
+    };
+
+    if(isNaN(BusBody.capacity)){
+        const error = new Error('Solo se aceptan numeros');
         error.status = 400
         throw error;
     };
@@ -36,15 +58,9 @@ const Create = async (BusBody)=>{
         throw error;
     };
 
-    const res = await br.Create(BusBody.plate,BusBody.capacity,BusBody.driverId);
-
-    return res;
-};
-
-const Update = async (id,BusBody) => {
     const res = await br.GetById(id);
 
-    if (!res) {
+    if(!res) {
         const error = new Error('El bus solicitado no existe');
         error.status = 404; // Marcamos que es un 404 Not Found
         throw error;
@@ -70,6 +86,13 @@ const DeleteBus = async (id)=>{
 
 const busByDriverId = async (id)=>{
     const buses = await br.GetBusDrivers(id);
+    const driver = await dr.GetById(id);
+
+    if(driver === undefined){
+        const error = new Error('El conductor solicitado no Existe');
+        error.status = 404;
+        throw error;
+    };
 
     if (buses.length <=0){
         const error = new Error('El conductor no tiene buses asignados');

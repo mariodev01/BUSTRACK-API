@@ -25,6 +25,17 @@ const CreateStatus = async (body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
 
+    // Opción 1: Validando el tipo de dato de forma segura
+    if (
+    body.current_passengers === null ||
+    body.current_passengers === undefined ||
+    (typeof body.current_passengers === 'string' && body.current_passengers.trim() === "")
+    ) {
+        const error = new Error('No se aceptan valores vacios ni nulos');
+        error.status = 400;
+        throw error;
+    }
+
     if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
         const error = new Error('El valor digitado no es un numero o es menor a cero');
         error.status = 400;
