@@ -21,8 +21,20 @@ const BusById = async (id) =>{
 
 const Create = async (BusBody)=>{
     if (!BusBody || Object.keys(BusBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
+        const error = new Error('Request body cannot be empty.');
+        error.status = 400;
+        throw error;
     };
+
+    if(
+    BusBody.capacity === null ||
+    BusBody.capacity === undefined ||
+    (typeof BusBody.capacity === 'string' && BusBody.capacity.trim() === "")
+    ){
+        const error = new Error('No se aceptan valores vacios ni nulos');
+        error.status = 400;
+        throw error;
+    }
 
     if(isNaN(BusBody.capacity)){
         const error = new Error('Solo se aceptan numeros');
@@ -30,7 +42,7 @@ const Create = async (BusBody)=>{
         throw error;
     };
 
-    if(BusBody.capacity < 0){
+    if(BusBody.capacity <= 0){
         const error = new Error('La capacidad del bus no puede ser menor a 0');
         error.status = 400;
         throw error;
@@ -42,9 +54,22 @@ const Create = async (BusBody)=>{
 };
 
 const Update = async (id,BusBody) => {
-    if(!BusBody || Object.keys(BusBody).length === 0) {
-        throw new Error("Request body cannot be empty.");
+    if (!BusBody || Object.keys(BusBody).length === 0) {
+        const error = new Error('Request body cannot be empty.');
+        error.status = 400;
+        throw error;
     };
+
+    if(
+    BusBody.capacity === null ||
+    BusBody.capacity === undefined ||
+    (typeof BusBody.capacity === 'string' && BusBody.capacity.trim() === "")
+    ){
+        const error = new Error('No se aceptan valores vacios ni nulos');
+        error.status = 400;
+        throw error;
+    }
+
 
     if(isNaN(BusBody.capacity)){
         const error = new Error('Solo se aceptan numeros');
@@ -52,7 +77,7 @@ const Update = async (id,BusBody) => {
         throw error;
     };
 
-    if(BusBody.capacity < 0){
+    if(BusBody.capacity <= 0){
         const error = new Error('La capacidad del bus no puede ser menor a 0');
         error.status = 400
         throw error;
@@ -85,9 +110,9 @@ const DeleteBus = async (id)=>{
 };
 
 const busByDriverId = async (id)=>{
-    const buses = await br.GetBusDrivers(id);
     const driver = await dr.GetById(id);
-
+    const buses = await br.GetBusDrivers(id);
+    
     if(driver === undefined){
         const error = new Error('El conductor solicitado no Existe');
         error.status = 404;

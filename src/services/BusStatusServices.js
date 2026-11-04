@@ -19,8 +19,10 @@ const GetStatusById = async(id) =>{
 };
 
 const CreateStatus = async (body)=>{
-    if (!body || Object.keys(body).length === 0) {
-        throw new Error("Request body cannot be empty.");
+    if(!body || Object.keys(body).length === 0) {
+        const error = new Error('Request body cannot be empty.');
+        error.status = 400;
+        throw error;    
     };
 
     const infoEstado = await busInfo.BusById(body.bus_id);
@@ -30,7 +32,7 @@ const CreateStatus = async (body)=>{
     body.current_passengers === null ||
     body.current_passengers === undefined ||
     (typeof body.current_passengers === 'string' && body.current_passengers.trim() === "")
-    ) {
+    ){
         const error = new Error('No se aceptan valores vacios ni nulos');
         error.status = 400;
         throw error;
@@ -55,9 +57,22 @@ const CreateStatus = async (body)=>{
 
 const updateStatus = async (id,body)=>{
     if(!body || Object.keys(body).length === 0) {
-        throw new Error("Request body cannot be empty.");
+        const error = new Error('Request body cannot be empty.');
+        error.status = 400;
+        throw error;    
     };
 
+    // Opción 1: Validando el tipo de dato de forma segura
+    if (
+    body.current_passengers === null ||
+    body.current_passengers === undefined ||
+    (typeof body.current_passengers === 'string' && body.current_passengers.trim() === "")
+    ){
+        const error = new Error('No se aceptan valores vacios ni nulos');
+        error.status = 400;
+        throw error;
+    }
+    
     //No se si esto es una buena practica
     await GetStatusById(id);
 
