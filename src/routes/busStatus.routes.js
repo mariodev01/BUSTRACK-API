@@ -5,7 +5,7 @@ const statusC = require("../controllers/busStatusController");
 
 router.get("/",statusC.getStatus);
 
-router.post("/statusCreate",statusC.createStatus);
+router.post("/",statusC.createStatus);
 
 //Obtener uno
 router.get("/:id",statusC.getById);

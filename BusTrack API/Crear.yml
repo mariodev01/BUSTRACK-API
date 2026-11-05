@@ -5,7 +5,7 @@ info:
 
 http:
   method: POST
-  url: http://localhost:3000/drivers/drivers
+  url: http://localhost:3000/drivers
   body:
     type: json
     data: |-

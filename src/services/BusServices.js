@@ -36,14 +36,14 @@ const Create = async (BusBody)=>{
         throw error;
     }
 
-    if(isNaN(BusBody.capacity)){
-        const error = new Error('Solo se aceptan numeros');
+    if(!Number.isFinite(Number(BusBody.capacity))){
+        const error = new Error('El valor ingresado no es un numero');
         error.status = 400;
         throw error;
     };
 
     if(BusBody.capacity <= 0){
-        const error = new Error('La capacidad del bus no puede ser menor a 0');
+        const error = new Error('La capacidad del bus debe ser mayor a cero');
         error.status = 400;
         throw error;
     };
@@ -70,15 +70,14 @@ const Update = async (id,BusBody) => {
         throw error;
     }
 
-
-    if(isNaN(BusBody.capacity)){
-        const error = new Error('Solo se aceptan numeros');
-        error.status = 400
+    if(!Number.isFinite(Number(BusBody.capacity))){
+        const error = new Error('El valor ingresado no es un numero');
+        error.status = 400;
         throw error;
     };
 
     if(BusBody.capacity <= 0){
-        const error = new Error('La capacidad del bus no puede ser menor a 0');
+        const error = new Error('La capacidad del bus debe ser mayor a cero');
         error.status = 400
         throw error;
     };

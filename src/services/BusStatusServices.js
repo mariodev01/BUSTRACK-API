@@ -38,13 +38,13 @@ const CreateStatus = async (body)=>{
         throw error;
     }
 
-    if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
+    if(!Number.isFinite(Number(body.current_passengers)) || Number(body.current_passengers) < 0){
         const error = new Error('El valor digitado no es un numero o es menor a cero');
         error.status = 400;
         throw error;
     };
 
-    if(Number(body.current_passengers) > infoEstado.capacity){
+    if(!Number(body.current_passengers) > infoEstado.capacity){
         const error = new Error('La cantidad de pasajeros supera la capacidad del autobús');
         error.status = 400;
         throw error;
@@ -78,13 +78,13 @@ const updateStatus = async (id,body)=>{
 
     const infoEstado = await busInfo.BusById(body.bus_id);
 
-    if(isNaN(body.current_passengers) || Number(body.current_passengers) < 0){
+    if(!Number.isFinite(Number(body.current_passengers)) || Number(body.current_passengers) < 0){
         const error = new Error('El valor digitado no es un numero o es menor a cero');
         error.status = 400;
         throw error;
     };
 
-    if(Number(body.current_passengers) > infoEstado.capacity){
+    if(!Number(body.current_passengers) > infoEstado.capacity){
         const error = new Error('La cantidad de pasajeros supera la capacidad del autobús');
         error.status = 400;
         throw error;

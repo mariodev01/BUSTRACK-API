@@ -6,7 +6,7 @@ const busController = require("../controllers/busController.js");
 
 router.get("/",busController.getBuses);
 
-router.post("/buses",busController.createBus);
+router.post("/",busController.createBus);
 
 //Obtener uno
 router.get("/:id",busController.getBusById);
