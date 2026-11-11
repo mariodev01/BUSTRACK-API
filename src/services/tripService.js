@@ -1,18 +1,16 @@
 const db = require("../config/db");
+const tr = require("../repositories/TripRepository");
 
 const allTrips = async()=>{
-    const sql = "SELECT * FROM Trips";
-    const res = await db.query(sql);
+    const res = tr.GetAll();
 
-    return res.rows;
+    return res || [];
 };
 
 const tripById = async (id)=>{
-    const sql = "SELECT * FROM Trips WHERE id = $1";
-    const valor = [id];
-    const res = await db.query(sql,valor);
+    const res = tr.GetById(id);
 
-    return res.rows[0];
+    
 };
 
 const create = async (tripBody)=>{
