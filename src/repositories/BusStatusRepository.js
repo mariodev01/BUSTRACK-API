@@ -38,10 +38,20 @@ const Delete = async(id)=>{
     return res.rowCount > 0;    
 };
 
+
+const EstadoXBus = async(id)=>{
+    const sql = "SELECT * FROM bus_estado WHERE bus_id = $1";
+        
+    const res = await db.query(sql,[id]);
+    
+    return res.rows;
+}
+
 module.exports = {
     GetAll,
     GetById,
     Create,
     Update,
-    Delete
+    Delete,
+    EstadoXBus
 };

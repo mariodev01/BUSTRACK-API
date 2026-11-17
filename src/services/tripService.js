@@ -1,6 +1,10 @@
 const db = require("../config/db");
 const tr = require("../repositories/TripRepository");
 
+//Auxiliares
+const br = require('../repositories/BusRepository');
+const bs = require('../repositories/BusStatusRepository');
+
 const allTrips = async()=>{
     const res = tr.GetAll();
 
@@ -10,34 +14,34 @@ const allTrips = async()=>{
 const tripById = async (id)=>{
     const res = tr.GetById(id);
 
-    
+    if(!res){
+        const error = new Error('El viaje solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    };
+
+    return res;
 };
 
 const create = async (tripBody)=>{
     if(!tripBody || Object.keys(tripBody).length === 0) {
         throw new Error("Request body cannot be empty.");
     };
-    const existe = await existeBus(tripBody.bus_id);
-    const infoBus = await busEstado(tripBody.bus_id);
+    const existe = await br.GetById(tripBody.bus_id);
+
+    const infoBus = await bs.EstadoXBus(tripBody.bus_id);
     
     const infoTrip = "SELECT * FROM trips WHERE bus_id = $1 and status = 'IN_PROGRESS' ";
-    const info = "SELECT * FROM bus_estado WHERE bus_id = $1";
-    const valor = [tripBody.bus_id];
 
-    const result = await db.query(info,valor);
-    const result2 = await db.query(infoTrip,valor);
+    const result2 = await db.query(infoTrip,[tripBody.bus_id]);
 
-    const registro = result.rows[0];
     const registro2 = result2.rowCount;
-
-    let sql = '';
-    let valores = [];
 
     if(existe <= 0){
         throw new Error("No existe bus con ese Id");
     };
 
-    if(infoBus <= 0){
+    if(infoBus.length <= 0){
         throw new Error("El bus no tiene estatus actualmente");
     }
 
@@ -45,7 +49,7 @@ const create = async (tripBody)=>{
         throw new Error("Ya el autobus tiene un viaje en progeso");
     }
 
-    if(registro.estado !== "ACTIVE"){
+    if(infoBus.estado !== "ACTIVE"){
         throw new Error("El autobús no está disponible para iniciar un viaje");
     };
 
@@ -53,21 +57,9 @@ const create = async (tripBody)=>{
         throw new Error("El origen y el destino deben ser diferentes.");
     };
 
-    if(tripBody.status === "FINISHED"){
-        sql = 'INSERT INTO trips (bus_id, origin, destination, departure_time, arrival_time, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
-        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.departure,tripBody.arrival,tripBody.status];
-    }else if(tripBody.status === "CANCELLED"){
-        sql = 'INSERT INTO trips (bus_id, origin, destination,status) VALUES ($1, $2, $3, $4) RETURNING *';
-        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status];
-    }else{
-        // La función NOW() va directamente en la sintaxis SQL
-        sql = 'INSERT INTO trips (bus_id, origin, destination, departure_time,status) VALUES ($1,$2,$3,NOW(),$4) RETURNING *';
-        //Ajustamos los índices de los parámetros (ahora son 5 en lugar de 6)
-        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status];
-    };
-    
-    const res = await db.query(sql, valores);
-    return res.rows[0];
+    const res = await tr.Create(tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.departure,tripBody.arrival,tripBody.status);
+
+    return res;
 };
 
 const update = async (id,tripBody)=>{
@@ -79,7 +71,7 @@ const update = async (id,tripBody)=>{
     let valores = [];
 
     const trip = await tripById(id);
-    const existe = await existeBus(tripBody.bus_id);
+    const existe = await br.GetById(tripBody.bus_id);
 
     if(!trip){
         throw new Error("No hay un viaje registrado con ese Id");
@@ -99,34 +91,26 @@ const update = async (id,tripBody)=>{
 
     if(trip.status === "CANCELLED"){
         throw new Error("El viaje tiene estatus cancelado y no se puede modificar sus datos");
-    }
-
-    if(trip.status === "IN_PROGRESS"){
-        sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,status = $4 WHERE id = $5 RETURNING *";
-        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
     };
 
-    if(tripBody.status === "FINISHED"){
-        sql = "UPDATE Trips SET bus_id = $1,origin = $2,destination = $3,arrival_time = NOW(),status = $4 WHERE id = $5 RETURNING *";
-        valores = [tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id];
-    };
 
-    if(tripBody.status === "CANCELLED"){
-        sql = "UPDATE Trips SET status = $1 WHERE id = $2 RETURNING *";
-        valores = [tripBody.status,id];
-    };
-    const res = await db.query(sql,valores);
+    const res = await tr.Update(tripBody.bus_id,tripBody.origin,tripBody.destination,tripBody.status,id);
 
-    return res.rows[0];
+    return res;
 };
 
 const deleteTrip = async (id)=>{
-    const sql = "DELETE FROM Trips where id = $1";
-    const valor = [id];
+    const res = tr.GetById(id);
 
-    const res = await db.query(sql,valor);
+    if(!res){
+        const error = new Error('El viaje solicitado no existe');
+        error.status = 404; // Marcamos que es un 404 Not Found
+        throw error;
+    };
 
-    return res.rowCount > 0;
+    const res2 = tr.DeleteT(id);
+
+    return res2;
 };
 
 module.exports = {
@@ -135,22 +119,4 @@ module.exports = {
     create,
     update,
     deleteTrip
-};
-
-async function existeBus(id){
-    const sql = "SELECT * FROM buses WHERE id = $1";
-    const valor = [id];
-
-    const res = await db.query(sql,valor);
-
-    return res.rowCount;
-};
-
-async function busEstado(id){
-    const sql = "SELECT * FROM bus_estado WHERE bus_id = $1";
-    const valor = [id];
-
-    const res = await db.query(sql,valor);
-
-    return res.rowCount;
 };
